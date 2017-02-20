@@ -408,7 +408,7 @@ def admin_teams(page):
     teams = Students.query.order_by(Students.id.asc()).slice(page_start, page_end).all()
     count = db.session.query(db.func.count(Students.id)).first()[0]
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('admin/teams.html', teams=teams, pages=pages, curr_page=page)
+    return render_template('admin/students.html', teams=teams, pages=pages, curr_page=page)
 
 
 @admin.route('/admin/team/<int:studentid>', methods=['GET', 'POST'])
@@ -429,7 +429,7 @@ def admin_team(studentid):
         awards = Awards.query.filter_by(studentid=studentid).order_by(Awards.date.asc()).all()
         score = user.score()
         place = user.place()
-        return render_template('admin/team.html', solves=solves, team=user, addrs=addrs, score=score, missing=missing,
+        return render_template('admin/student.html', solves=solves, team=user, addrs=addrs, score=score, missing=missing,
                                place=place, wrong_keys=wrong_keys, awards=awards)
     elif request.method == 'POST':
         admin_user = request.form.get('admin', None)

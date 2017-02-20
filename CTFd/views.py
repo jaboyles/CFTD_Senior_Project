@@ -109,8 +109,8 @@ def static_html(template):
         return render_template('page.html', content=page.html)
 
 
-@views.route('/teams', defaults={'page': '1'})
-@views.route('/teams/<int:page>')
+@views.route('/students', defaults={'page': '1'})
+@views.route('/students/<int:page>')
 def teams(page):
     page = abs(int(page))
     results_per_page = 50
@@ -124,10 +124,10 @@ def teams(page):
         count = Students.query.filter_by(banned=False).count()
         teams = Students.query.filter_by(banned=False).slice(page_start, page_end).all()
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+    return render_template('students.html', students=teams, student_pages=pages, curr_page=page)
 
 
-@views.route('/team/<int:studentid>', methods=['GET', 'POST'])
+@views.route('/student/<int:studentid>', methods=['GET', 'POST'])
 def team(studentid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
@@ -139,7 +139,7 @@ def team(studentid):
     db.session.close()
 
     if request.method == 'GET':
-        return render_template('team.html', solves=solves, awards=awards, team=user, score=score, place=place)
+        return render_template('student.html', solves=solves, awards=awards, student=user, score=score, place=place)
     elif request.method == 'POST':
         json = {'solves': []}
         for x in solves:
