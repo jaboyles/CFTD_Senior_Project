@@ -2,7 +2,7 @@ from flask import render_template, jsonify, Blueprint, redirect, url_for, reques
 from sqlalchemy.sql.expression import union_all
 
 from CTFd.utils import unix_time, authed, get_config
-from CTFd.models import db, Teams, Solves, Awards, Challenges
+from CTFd.models import db, Students, Solves, Awards, Challenges
 
 scoreboard = Blueprint('scoreboard', __name__)
 
@@ -10,20 +10,20 @@ scoreboard = Blueprint('scoreboard', __name__)
 def get_standings(admin=False, count=None):
     score = db.func.sum(Challenges.value).label('score')
     date = db.func.max(Solves.date).label('date')
-    scores = db.session.query(Solves.teamid.label('teamid'), score, date).join(Challenges).group_by(Solves.teamid)
-    awards = db.session.query(Awards.teamid.label('teamid'), db.func.sum(Awards.value).label('score'), db.func.max(Awards.date).label('date')) \
-        .group_by(Awards.teamid)
+    scores = db.session.query(Solves.studentid.label('studentid'), score, date).join(Challenges).group_by(Solves.studentid)
+    awards = db.session.query(Awards.studentid.label('studentid'), db.func.sum(Awards.value).label('score'), db.func.max(Awards.date).label('date')) \
+        .group_by(Awards.studentid)
     results = union_all(scores, awards).alias('results')
-    sumscores = db.session.query(results.columns.teamid, db.func.sum(results.columns.score).label('score'), db.func.max(results.columns.date).label('date')) \
-        .group_by(results.columns.teamid).subquery()
+    sumscores = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'), db.func.max(results.columns.date).label('date')) \
+        .group_by(results.columns.studentid).subquery()
     if admin:
-        standings_query = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'), Teams.banned, sumscores.columns.score) \
-                                    .join(sumscores, Teams.id == sumscores.columns.teamid) \
+        standings_query = db.session.query(Students.id.label('studentid'), Students.name.label('name'), Students.banned, sumscores.columns.score) \
+                                    .join(sumscores, Students.id == sumscores.columns.studentid) \
                                     .order_by(sumscores.columns.score.desc(), sumscores.columns.date)
     else:
-        standings_query = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'), sumscores.columns.score) \
-                                    .join(sumscores, Teams.id == sumscores.columns.teamid) \
-                                    .filter(Teams.banned == False) \
+        standings_query = db.session.query(Students.id.label('studentid'), Students.name.label('name'), sumscores.columns.score) \
+                                    .join(sumscores, Students.id == sumscores.columns.studentid) \
+                                    .filter(Students.banned == False) \
                                     .order_by(sumscores.columns.score.desc(), sumscores.columns.date)
     if count is None:
         standings = standings_query.all()
@@ -48,7 +48,7 @@ def scores():
     standings = get_standings()
     json = {'standings': []}
     for i, x in enumerate(standings):
-        json['standings'].append({'pos': i + 1, 'id': x.teamid, 'team': x.name, 'score': int(x.score)})
+        json['standings'].append({'pos': i + 1, 'id': x.studentid, 'team': x.name, 'score': int(x.score)})
     return jsonify(json)
 
 
@@ -67,20 +67,20 @@ def topteams(count):
     standings = get_standings(count=count)
 
     for team in standings:
-        solves = Solves.query.filter_by(teamid=team.teamid).all()
-        awards = Awards.query.filter_by(teamid=team.teamid).all()
+        solves = Solves.query.filter_by(studentid=team.studentid).all()
+        awards = Awards.query.filter_by(studentid=team.studentid).all()
         json['scores'][team.name] = []
         for x in solves:
             json['scores'][team.name].append({
                 'chal': x.chalid,
-                'team': x.teamid,
+                'team': x.studentid,
                 'value': x.chal.value,
                 'time': unix_time(x.date)
             })
         for award in awards:
             json['scores'][team.name].append({
                 'chal': None,
-                'team': award.teamid,
+                'team': award.studentid,
                 'value': award.value,
                 'time': unix_time(award.date)
             })

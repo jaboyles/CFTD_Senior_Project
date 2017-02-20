@@ -76,7 +76,7 @@ class Challenges(db.Model):
 
 class Awards(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    teamid = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    studentid = db.Column(db.Integer, db.ForeignKey('students.id'))
     name = db.Column(db.String(80))
     description = db.Column(db.Text)
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
@@ -84,8 +84,8 @@ class Awards(db.Model):
     category = db.Column(db.String(80))
     icon = db.Column(db.Text)
 
-    def __init__(self, teamid, name, value):
-        self.teamid = teamid
+    def __init__(self, studentid, name, value):
+        self.studentid = studentid
         self.name = name
         self.value = value
 
@@ -134,45 +134,72 @@ class Keys(db.Model):
         return self.flag
 
 
+class Sections(db.Model):
+    sectionNumber = db.Column(db.Integer, primary_key=True)
+    courseNumber = db.Column(db.Integer)
+
+    def __init__(self, sectionNumber, courseNumber):
+        self.sectionNumber = sectionNumber
+        self.courseNumber = courseNumber
+
+
 class Teams(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
+    sectionNumber = db.Column(db.Integer, db.ForeignKey('sections.sectionNumber'))
+
+    def __init__(self, name, sectionid):
+        self.name = name
+        self.sectionNumber = sectionid
+
+
+
+    def score(self):
+        students = Students.objects.filter(teamid=self.id)
+        sum = 0
+        for student in students:
+            sum += student.score
+
+        return sum
+
+class Students(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128), unique=True)
     email = db.Column(db.String(128), unique=True)
+    teamid = db.Column(db.Integer, db.ForeignKey('teams.id'))
     password = db.Column(db.String(128))
-    website = db.Column(db.String(128))
-    affiliation = db.Column(db.String(128))
-    country = db.Column(db.String(32))
     bracket = db.Column(db.String(32))
     banned = db.Column(db.Boolean, default=False)
     verified = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, default=False)
     joined = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-    def __init__(self, name, email, password):
+    def __init__(self, name, email, password, teamid):
         self.name = name
         self.email = email
         self.password = bcrypt_sha256.encrypt(str(password))
+        self.teamid = teamid
 
     def __repr__(self):
-        return '<team %r>' % self.name
+        return '<student %r>' % self.name
 
     def score(self):
         score = db.func.sum(Challenges.value).label('score')
-        team = db.session.query(Solves.teamid, score).join(Teams).join(Challenges).filter(Teams.banned == False, Teams.id == self.id).group_by(Solves.teamid).first()
+        student = db.session.query(Solves.studentid, score).join(Students).join(Challenges).filter(Students.banned == False, Students.id == self.id).group_by(Solves.studentid).first()
         award_score = db.func.sum(Awards.value).label('award_score')
-        award = db.session.query(award_score).filter_by(teamid=self.id).first()
-        if team:
-            return int(team.score or 0) + int(award.award_score or 0)
+        award = db.session.query(award_score).filter_by(studentid=self.id).first()
+        if student:
+            return int(student.score or 0) + int(award.award_score or 0)
         else:
             return 0
 
     def place(self):
         score = db.func.sum(Challenges.value).label('score')
         quickest = db.func.max(Solves.date).label('quickest')
-        teams = db.session.query(Solves.teamid).join(Teams).join(Challenges).filter(Teams.banned == False).group_by(Solves.teamid).order_by(score.desc(), quickest).all()
+        students = db.session.query(Solves.studentid).join(Students).join(Challenges).filter(Students.banned == False).group_by(Solves.studentid).order_by(score.desc(), quickest).all()
         # http://codegolf.stackexchange.com/a/4712
         try:
-            i = teams.index((self.id,)) + 1
+            i = students.index((self.id,)) + 1
             k = i % 10
             return "%d%s" % (i, "tsnrhtdd"[(i / 10 % 10 != 1) * (k < 4) * k::4])
         except ValueError:
@@ -180,21 +207,21 @@ class Teams(db.Model):
 
 
 class Solves(db.Model):
-    __table_args__ = (db.UniqueConstraint('chalid', 'teamid'), {})
+    __table_args__ = (db.UniqueConstraint('chalid', 'studentid'), {})
     id = db.Column(db.Integer, primary_key=True)
     chalid = db.Column(db.Integer, db.ForeignKey('challenges.id'))
-    teamid = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    studentid = db.Column(db.Integer, db.ForeignKey('students.id'))
     ip = db.Column(db.Integer)
     flag = db.Column(db.Text)
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    team = db.relationship('Teams', foreign_keys="Solves.teamid", lazy='joined')
+    student = db.relationship('Students', foreign_keys="Solves.studentid", lazy='joined')
     chal = db.relationship('Challenges', foreign_keys="Solves.chalid", lazy='joined')
     # value = db.Column(db.Integer)
 
-    def __init__(self, chalid, teamid, ip, flag):
+    def __init__(self, chalid, studentid, ip, flag):
         self.ip = ip2long(ip)
         self.chalid = chalid
-        self.teamid = teamid
+        self.studentid = studentid
         self.flag = flag
         # self.value = value
 
@@ -205,13 +232,13 @@ class Solves(db.Model):
 class WrongKeys(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chalid = db.Column(db.Integer, db.ForeignKey('challenges.id'))
-    teamid = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    studentid = db.Column(db.Integer, db.ForeignKey('students.id'))
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     flag = db.Column(db.Text)
     chal = db.relationship('Challenges', foreign_keys="WrongKeys.chalid", lazy='joined')
 
-    def __init__(self, teamid, chalid, flag):
-        self.teamid = teamid
+    def __init__(self, studentid, chalid, flag):
+        self.studentid = studentid
         self.chalid = chalid
         self.flag = flag
 
@@ -222,15 +249,15 @@ class WrongKeys(db.Model):
 class Tracking(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ip = db.Column(db.BigInteger)
-    team = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    student = db.Column(db.Integer, db.ForeignKey('students.id'))
     date = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-    def __init__(self, ip, team):
+    def __init__(self, ip, student):
         self.ip = ip2long(ip)
-        self.team = team
+        self.student = student
 
     def __repr__(self):
-        return '<ip %r>' % self.team
+        return '<ip %r>' % self.student
 
 
 class Config(db.Model):

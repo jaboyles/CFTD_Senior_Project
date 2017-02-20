@@ -25,7 +25,7 @@ import six
 from six.moves.urllib.parse import urlparse, urljoin
 from werkzeug.utils import secure_filename
 
-from CTFd.models import db, WrongKeys, Pages, Config, Tracking, Teams, Files, Containers, ip2long, long2ip
+from CTFd.models import db, WrongKeys, Pages, Config, Tracking, Students, Files, Containers, ip2long, long2ip
 
 cache = Cache()
 migrate = Migrate()
@@ -117,9 +117,9 @@ def init_utils(app):
     @app.before_request
     def tracker():
         if authed():
-            track = Tracking.query.filter_by(ip=ip2long(get_ip()), team=session['id']).first()
+            track = Tracking.query.filter_by(ip=ip2long(get_ip()), student=session['id']).first()
             if not track:
-                visit = Tracking(ip=get_ip(), team=session['id'])
+                visit = Tracking(ip=get_ip(), student=session['id'])
                 db.session.add(visit)
                 db.session.commit()
             else:
@@ -159,7 +159,7 @@ def authed():
 
 def is_verified():
     if get_config('verify_emails'):
-        team = Teams.query.filter_by(id=session.get('id')).first()
+        team = Students.query.filter_by(id=session.get('id')).first()
         if team:
             return team.verified
         else:

@@ -9,7 +9,7 @@ from itsdangerous import TimedSerializer, BadTimeSignature, Signer, BadSignature
 from passlib.hash import bcrypt_sha256
 
 from CTFd.utils import sha512, is_safe_url, authed, can_send_mail, sendmail, can_register, get_config, verify_email
-from CTFd.models import db, Teams
+from CTFd.models import db, Students
 
 auth = Blueprint('auth', __name__)
 
@@ -27,7 +27,7 @@ def confirm_user(data=None):
             return render_template('confirm.html', errors=['Your confirmation link seems wrong'])
         except:
             return render_template('confirm.html', errors=['Your link appears broken, please try again.'])
-        team = Teams.query.filter_by(email=email).first_or_404()
+        team = Students.query.filter_by(email=email).first_or_404()
         team.verified = True
         db.session.commit()
         db.session.close()
@@ -39,7 +39,7 @@ def confirm_user(data=None):
     if not data and request.method == "GET": # User has been directed to the confirm page because his account is not verified
         if not authed():
             return redirect(url_for('auth.login'))
-        team = Teams.query.filter_by(id=session['id']).first_or_404()
+        team = Students.query.filter_by(id=session['id']).first_or_404()
         if team.verified:
             return redirect(url_for('views.profile'))
         else:
@@ -60,7 +60,7 @@ def reset_password(data=None):
             return render_template('reset_password.html', errors=['Your link has expired'])
         except:
             return render_template('reset_password.html', errors=['Your link appears broken, please try again.'])
-        team = Teams.query.filter_by(name=name).first_or_404()
+        team = Students.query.filter_by(name=name).first_or_404()
         team.password = bcrypt_sha256.encrypt(request.form['password'].strip())
         db.session.commit()
         db.session.close()
@@ -68,7 +68,7 @@ def reset_password(data=None):
 
     if request.method == 'POST':
         email = request.form['email'].strip()
-        team = Teams.query.filter_by(email=email).first()
+        team = Students.query.filter_by(email=email).first()
         if not team:
             return render_template('reset_password.html', errors=['If that account exists you will receive an email, please check your inbox'])
         s = TimedSerializer(app.config['SECRET_KEY'])
@@ -97,8 +97,8 @@ def register():
         password = request.form['password']
 
         name_len = len(name) == 0
-        names = Teams.query.add_columns('name', 'id').filter_by(name=name).first()
-        emails = Teams.query.add_columns('email', 'id').filter_by(email=email).first()
+        names = Students.query.add_columns('name', 'id').filter_by(name=name).first()
+        emails = Students.query.add_columns('email', 'id').filter_by(email=email).first()
         pass_short = len(password) == 0
         pass_long = len(password) > 128
         valid_email = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", request.form['email'])
@@ -120,7 +120,7 @@ def register():
             return render_template('register.html', errors=errors, name=request.form['name'], email=request.form['email'], password=request.form['password'])
         else:
             with app.app_context():
-                team = Teams(name, email.lower(), password)
+                team = Students(name, email.lower(), password)
                 db.session.add(team)
                 db.session.commit()
                 db.session.flush()
@@ -155,7 +155,7 @@ def login():
     if request.method == 'POST':
         errors = []
         name = request.form['name']
-        team = Teams.query.filter_by(name=name).first()
+        team = Students.query.filter_by(name=name).first()
         if team:
             if team and bcrypt_sha256.verify(request.form['password'], team.password):
                 try:

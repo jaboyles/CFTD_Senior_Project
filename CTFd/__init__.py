@@ -4,7 +4,7 @@ from distutils.version import StrictVersion
 from flask import Flask
 from jinja2 import FileSystemLoader
 from sqlalchemy.engine.url import make_url
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy_utils import database_exists, create_database
 
 from utils import get_config, set_config, cache, migrate, migrate_upgrade
@@ -26,7 +26,7 @@ def create_app(config='CTFd.config.Config'):
         app.config.from_object(config)
         app.jinja_loader = ThemeLoader(os.path.join(app.root_path, app.template_folder), followlinks=True)
 
-        from CTFd.models import db, Teams, Solves, Challenges, WrongKeys, Keys, Tags, Files, Tracking
+        from CTFd.models import db, Students, Solves, Challenges, WrongKeys, Keys, Tags, Files, Tracking
 
         url = make_url(app.config['SQLALCHEMY_DATABASE_URI'])
         if url.drivername == 'postgres':

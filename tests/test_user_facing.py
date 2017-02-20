@@ -1,5 +1,5 @@
 from helpers import create_ctfd, register_user, login_as_user
-from CTFd.models import Teams
+from CTFd.models import Students
 
 
 def test_index():
@@ -16,7 +16,7 @@ def test_register_user():
     app = create_ctfd()
     with app.app_context():
         register_user(app)
-        team_count = app.db.session.query(app.db.func.count(Teams.id)).first()[0]
+        team_count = app.db.session.query(app.db.func.count(Students.id)).first()[0]
         assert team_count == 2  # There's the admin user and the created user
 
 
@@ -26,7 +26,7 @@ def test_register_duplicate_teamname():
     with app.app_context():
         register_user(app, name="user1", email="user1@ctfd.io", password="password")
         register_user(app, name="user1", email="user2@ctfd.io", password="password")
-        team_count = app.db.session.query(app.db.func.count(Teams.id)).first()[0]
+        team_count = app.db.session.query(app.db.func.count(Students.id)).first()[0]
         assert team_count == 2  # There's the admin user and the first created user
 
 
@@ -36,7 +36,7 @@ def test_register_duplicate_email():
     with app.app_context():
         register_user(app, name="user1", email="user1@ctfd.io", password="password")
         register_user(app, name="user2", email="user1@ctfd.io", password="password")
-        team_count = app.db.session.query(app.db.func.count(Teams.id)).first()[0]
+        team_count = app.db.session.query(app.db.func.count(Students.id)).first()[0]
         assert team_count == 2  # There's the admin user and the first created user
 
 
