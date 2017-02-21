@@ -7,7 +7,7 @@ from passlib.hash import bcrypt_sha256
 
 from CTFd.utils import authed, is_setup, validate_url, get_config, set_config, sha512, cache, ctftime, view_after_ctf, ctf_started, \
     is_admin
-from CTFd.models import db, Students, Solves, Awards, Files, Pages
+from CTFd.models import db, Students, Solves, Awards, Files, Pages, Teams
 
 views = Blueprint('views', __name__)
 
@@ -111,7 +111,7 @@ def static_html(template):
 
 @views.route('/students', defaults={'page': '1'})
 @views.route('/students/<int:page>')
-def teams(page):
+def students(page):
     page = abs(int(page))
     results_per_page = 50
     page_start = results_per_page * (page - 1)
@@ -128,7 +128,7 @@ def teams(page):
 
 
 @views.route('/student/<int:studentid>', methods=['GET', 'POST'])
-def team(studentid):
+def student(studentid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
     user = Students.query.filter_by(id=studentid).first_or_404()
@@ -230,3 +230,25 @@ def file_handler(path):
                 else:
                     abort(403)
     return send_file(os.path.join(app.root_path, 'uploads', f.location))
+
+@views.route('/teams', defaults={'page': '1'})
+@views.route('/teams/<int:page>')
+def teams(page):
+    page = abs(int(page))
+    results_per_page = 50
+    page_start = results_per_page * (page - 1)
+    page_end = results_per_page * (page - 1) + results_per_page
+
+
+    count = Teams.query.filter_by().count()
+    teams = Teams.query.filter_by().slice(page_start, page_end).all()
+
+    pages = int(count / results_per_page) + (count % results_per_page > 0)
+    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+
+@views.route('/team/<int:teamid>')
+def team(teamid):
+
+    team = Teams.object.filter(id=teamid)
+    students =  Students.object.filter(teamid=teamid)
+    return render_template('team.html', team=team, students=students)

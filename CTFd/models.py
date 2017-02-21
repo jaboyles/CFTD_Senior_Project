@@ -152,8 +152,6 @@ class Teams(db.Model):
         self.name = name
         self.sectionNumber = sectionid
 
-
-
     def score(self):
         students = Students.objects.filter(teamid=self.id)
         sum = 0
@@ -161,6 +159,9 @@ class Teams(db.Model):
             sum += student.score
 
         return sum
+
+    def num_students(self):
+        return Students.objects.filter(teamid=self.id)
 
 class Students(db.Model):
     id = db.Column(db.Integer, primary_key=True)
