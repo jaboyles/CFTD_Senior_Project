@@ -207,13 +207,10 @@ def profile():
             user = Students.query.filter_by(id=session['id']).first()
             name = user.name
             email = user.email
-            website = user.website
-            affiliation = user.affiliation
-            country = user.country
             prevent_name_change = get_config('prevent_name_change')
             confirm_email = get_config('verify_emails') and not user.verified
-            return render_template('profile.html', name=name, email=email, website=website, affiliation=affiliation,
-                                   country=country, prevent_name_change=prevent_name_change, confirm_email=confirm_email)
+            return render_template('profile.html', name=name, email=email, prevent_name_change=prevent_name_change,
+                                   confirm_email=confirm_email)
     else:
         return redirect(url_for('auth.login'))
 

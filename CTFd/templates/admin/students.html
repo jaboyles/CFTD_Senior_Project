@@ -25,7 +25,7 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                                 <input type="hidden" name="route">
                                 <input id="nonce" type="hidden" name="nonce" value="{{ nonce }}">
                                 <div class="small-6 small-centered text-center columns">
-                                    <p>Are you sure you want to delete <strong id="confirm-team-name"></strong>?</p>
+                                    <p>Are you sure you want to delete <strong id="confirm-student-name"></strong>?</p>
                                     <button type="button" data-dismiss="modal" class="btn btn-theme btn-outlined">No</button>
                                     <button type="button" id="delete-user" class="btn btn-theme btn-outlined">Yes</button>
                                 </div>
@@ -62,12 +62,12 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                     <h2 class="text-center">Edit User</h2>
                 </div>
                 <div class="modal-body" style="padding:20px; height:525px;">
-                    <form method="POST" action="{{ request.script_root }}/admin/teams/">
+                    <form method="POST" action="{{ request.script_root }}/admin/students/">
                         <input type="hidden" name="nonce" value="{{ nonce }}">
                         <input type="hidden" name="id">
                         <div class="form-group">
-                            <label for="name">Team Name</label>
-                            <input type="text" class="form-control" name="name" id="name" placeholder="Enter new team name" required>
+                            <label for="name">Student Name</label>
+                            <input type="text" class="form-control" name="name" id="name" placeholder="Enter new student name" required>
                         </div>
                         <div class="form-group">
                             <label for="email">Email</label>
@@ -98,12 +98,12 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             </div>
         </div>
     </div>
-    <table id="teamsboard" class="table table-striped">
+    <table id="studentsboard" class="table table-striped">
         <thead>
             <tr>
                 <td width="10px" class="text-center"><b>ID</b>
                 </td>
-                <td class="text-center"><b>Team</b>
+                <td class="text-center"><b>Student</b>
                 </td>
                 <td class="text-center"><b>Email</b>
                 </td>
@@ -122,26 +122,26 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             </tr>
         </thead>
         <tbody>
-            {% for team in teams %}
-            <tr name="{{ team.id }}">
-                <td class="team-id">{{ team.id }}</td>
-                <td class="team-name"><a href="{{ request.script_root }}/admin/team/{{ team.id }}">{{ team.name | truncate(32) }}</a>
+            {% for student in students %}
+            <tr name="{{ student.id }}">
+                <td class="student-id">{{ student.id }}</td>
+                <td class="student-name"><a href="{{ request.script_root }}/admin/student/{{ student.id }}">{{ student.name | truncate(32) }}</a>
                 </td>
-                <td class="team-email">{{ team.email | truncate(32) }}</td>
-                <td class="team-website">{% if team.website and team.website.startswith('http') %}<a href="{{ team.website }}">{{ team.website | truncate(32) }}</a>{% endif %}
+                <td class="student-email">{{ student.email | truncate(32) }}</td>
+                <td class="student-website">{% if student.website and student.website.startswith('http') %}<a href="{{ student.website }}">{{ student.website | truncate(32) }}</a>{% endif %}
                 </td>
-                <td class="team-affiliation"><span>{% if team.affiliation %}{{ team.affiliation | truncate(20) }}{% endif %}</span>
+                <td class="student-affiliation"><span>{% if student.affiliation %}{{ student.affiliation | truncate(20) }}{% endif %}</span>
                 </td>
-                <td class="team-country"><span>{% if team.country %}{{ team.country }}{% endif %}</span>
+                <td class="student-country"><span>{% if student.country %}{{ student.country }}{% endif %}</span>
                 </td>
-                <td class="team-admin">
+                <td class="student-admin">
                     <div class="center-block checkbox text-center">
-                        <input type="checkbox" {% if team.admin %}checked{% endif %}>
+                        <input type="checkbox" {% if student.admin %}checked{% endif %}>
                     </div>
                 </td>
-                <td class="team-verified">
+                <td class="student-verified">
                     <div class="center-block checkbox text-center">
-                        <input type="checkbox" {% if team.verified %}checked{% endif %}>
+                        <input type="checkbox" {% if student.verified %}checked{% endif %}>
                     </div>
                 </td>
                 <td class="text-center"><span>
@@ -157,15 +157,15 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
     {% if pages > 1 %}
     <div class="text-center">Page
         <br>
-        {% if curr_page != 1 %}<a href="{{ request.script_root }}/admin/teams/{{ curr_page-1 }}">&lt;&lt;&lt;</a>{% endif %}
+        {% if curr_page != 1 %}<a href="{{ request.script_root }}/admin/students/{{ curr_page-1 }}">&lt;&lt;&lt;</a>{% endif %}
         {% for page in range(1, pages + 1) %}
             {% if curr_page != page %}
-                <a href="{{ request.script_root }}/admin/teams/{{ page }}">{{ page }}</a>
+                <a href="{{ request.script_root }}/admin/students/{{ page }}">{{ page }}</a>
             {% else %}
                 <b>{{ page }}</b>
             {% endif %}
         {% endfor %}
-        {% if curr_page != pages %}<a href="{{ request.script_root }}/admin/teams/{{ curr_page+1 }}">&gt;&gt;&gt;</a>{% endif %}
+        {% if curr_page != pages %}<a href="{{ request.script_root }}/admin/students/{{ curr_page+1 }}">&gt;&gt;&gt;</a>{% endif %}
     </div>
     {% endif %}
 </div>
@@ -182,7 +182,7 @@ function load_update_modal(id, name, email, website, affiliation, country){
     modal_form.find('input[name=website]').val(website)
     modal_form.find('input[name=affiliation]').val(affiliation)
     modal_form.find('input[name=country]').val(country)
-    $('#user form').attr('action', '{{ request.script_root }}/admin/team/'+id)
+    $('#user form').attr('action', '{{ request.script_root }}/admin/student/'+id)
     $('#user').modal("show");
 }
 
@@ -196,16 +196,16 @@ $('#update-user').click(function(e){
             if (data['data'][i] == 'success'){
                 var row = $('tr[name='+id+']')
                 console.log($.grep(user_data, function(e){ return e.name == 'name'; })[0]['value'])
-                console.log(row.find('.team-name > a'))
-                row.find('.team-name > a').text( $.grep(user_data, function(e){ return e.name == 'name'; })[0]['value'] );
-                row.find('.team-email').text( $.grep(user_data, function(e){ return e.name == 'email'; })[0]['value'] );
+                console.log(row.find('.student-name > a'))
+                row.find('.student-name > a').text( $.grep(user_data, function(e){ return e.name == 'name'; })[0]['value'] );
+                row.find('.student-email').text( $.grep(user_data, function(e){ return e.name == 'email'; })[0]['value'] );
 
-                row.find('.team-website > a').empty()
+                row.find('.student-website > a').empty()
                 var website = $.grep(user_data, function(e){ return e.name == 'website'; })[0]['value']
-                row.find('.team-website').append($('<a>').attr('href', website).text(website));
+                row.find('.student-website').append($('<a>').attr('href', website).text(website));
 
-                row.find('.team-affiliation').text( $.grep(user_data, function(e){ return e.name == 'affiliation'; })[0]['value'] );
-                row.find('.team-country').text( $.grep(user_data, function(e){ return e.name == 'country'; })[0]['value'] );
+                row.find('.student-affiliation').text( $.grep(user_data, function(e){ return e.name == 'affiliation'; })[0]['value'] );
+                row.find('.student-country').text( $.grep(user_data, function(e){ return e.name == 'country'; })[0]['value'] );
                 $('#user').modal('hide');
             }
             else{
@@ -215,24 +215,24 @@ $('#update-user').click(function(e){
     })
 });
 
-$('.team-admin input').on('change', function(){
+$('.student-admin input').on('change', function(){
     var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
+    var id = elem.find('.student-id').text().trim();
     var admin = $(this).prop('checked');
     var nonce = $('#nonce').val();
     console.log(admin);
 
-    $.post('{{ request.script_root }}/admin/team/'+id, {'admin':admin, 'nonce':nonce});
+    $.post('{{ request.script_root }}/admin/student/'+id, {'admin':admin, 'nonce':nonce});
 });
 
-$('.team-verified input').on('change', function () {
+$('.student-verified input').on('change', function () {
     var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
+    var id = elem.find('.student-id').text().trim();
     var verified = $(this).prop('checked');
     var nonce = $('#nonce').val();
     console.log(verified);
 
-    $.post('{{ request.script_root }}/admin/team/' + id, {'verified': verified, 'nonce': nonce});
+    $.post('{{ request.script_root }}/admin/student/' + id, {'verified': verified, 'nonce': nonce});
 })
 
 $('#send-user-email').click(function(e){
@@ -263,12 +263,12 @@ $('#delete-user').click(function(e){
 
 $('.fa-pencil-square-o').click(function(){
     var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
-    var name = elem.find('.team-name').text().trim();
-    var email = elem.find('.team-email').text().trim();
-    var website = elem.find('.team-website').text().trim();
-    var affiliation = elem.find('.team-affiliation').text().trim();
-    var country = elem.find('.team-country').text().trim();
+    var id = elem.find('.student-id').text().trim();
+    var name = elem.find('.student-name').text().trim();
+    var email = elem.find('.student-email').text().trim();
+    var website = elem.find('.student-website').text().trim();
+    var affiliation = elem.find('.student-affiliation').text().trim();
+    var country = elem.find('.student-country').text().trim();
 
     load_update_modal(id, name, email, website, affiliation, country);
 });
@@ -276,15 +276,15 @@ $('.fa-pencil-square-o').click(function(){
 function load_confirm_modal(id, name){
     var modal = $('#confirm')
     modal.find('input[name=id]').val(id)
-    modal.find('#confirm-team-name').text(name)
-    $('#confirm form').attr('action', '{{ request.script_root }}/admin/team/'+id+'/delete');
+    modal.find('#confirm-student-name').text(name)
+    $('#confirm form').attr('action', '{{ request.script_root }}/admin/student/'+id+'/delete');
     $('#confirm').modal();
 }
 
 $('.fa-times').click(function(){
     var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
-    var name = elem.find('.team-name').text().trim();
+    var id = elem.find('.student-id').text().trim();
+    var name = elem.find('.student-name').text().trim();
     load_confirm_modal(id, name)
 });
 
@@ -293,13 +293,13 @@ function load_email_modal(id){
     modal.find('textarea').val("")
     modal.find('input[name=id]').val(id)
     $('#email-user-errors').empty()
-    $('#email-user form').attr('action', '{{ request.script_root }}/admin/team/'+id+'/mail');
+    $('#email-user form').attr('action', '{{ request.script_root }}/admin/student/'+id+'/mail');
     $('#email-user').modal();
 }
 
 $('.fa-envelope').click(function(){
     var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
+    var id = elem.find('.student-id').text().trim();
     load_email_modal(id);
 });
 </script>

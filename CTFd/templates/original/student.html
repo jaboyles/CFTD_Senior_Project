@@ -6,17 +6,17 @@
 {% block content %}
 <div class="jumbotron home">
     <div class="container">
-        <h1 id="team-id">{{ student.name }}</h1>
+        <h1 id="student-id">{{ student.name }}</h1>
     </div>
 </div>
 <div class="container">
-    <div class="team-info">
-        <h2 id="team-place" class="text-center">
+    <div class="student-info">
+        <h2 id="student-place" class="text-center">
             {%if place %}
                 {{ place }} <small>place</small>
             {% endif %}
         </h2>
-        <h2 id="team-score" class="text-center">
+        <h2 id="student-score" class="text-center">
             {%if score %}
                 {{ score }} <small>points</small>
             {% endif %}
@@ -82,5 +82,5 @@
 {% block scripts %}
     <script src="{{ request.script_root }}/static/{{ ctf_theme() }}/js/vendor/plotly.min.js"></script>
     <script src="{{ request.script_root }}/static/{{ ctf_theme() }}/js/utils.js"></script>
-    <script src="{{ request.script_root }}/static/{{ ctf_theme() }}/js/team.js"></script>
+    <script src="{{ request.script_root }}/static/{{ ctf_theme() }}/js/student.js"></script>
 {% endblock %}

@@ -281,15 +281,15 @@ def admin_chals():
     if request.method == 'POST':
         chals = Challenges.query.add_columns('id', 'name', 'value', 'description', 'category', 'hidden').order_by(Challenges.value).all()
 
-        teams_with_points = db.session.query(Solves.studentid).join(Students).filter(
+        students_with_points = db.session.query(Solves.studentid).join(Students).filter(
             Students.banned == False).group_by(Solves.studentid).count()
 
         json_data = {'game': []}
         for x in chals:
             solve_count = Solves.query.join(Students, Solves.studentid == Students.id).filter(
                 Solves.chalid == x[1], Students.banned == False).count()
-            if teams_with_points > 0:
-                percentage = (float(solve_count) / float(teams_with_points))
+            if students_with_points > 0:
+                percentage = (float(solve_count) / float(students_with_points))
             else:
                 percentage = 0.0
 
@@ -396,24 +396,24 @@ def admin_files(chalid):
             return redirect(url_for('admin.admin_chals'))
 
 
-@admin.route('/admin/teams', defaults={'page': '1'})
-@admin.route('/admin/teams/<int:page>')
+@admin.route('/admin/students', defaults={'page': '1'})
+@admin.route('/admin/students/<int:page>')
 @admins_only
-def admin_teams(page):
+def admin_students(page):
     page = abs(int(page))
     results_per_page = 50
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
-    teams = Students.query.order_by(Students.id.asc()).slice(page_start, page_end).all()
+    students = Students.query.order_by(Students.id.asc()).slice(page_start, page_end).all()
     count = db.session.query(db.func.count(Students.id)).first()[0]
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('admin/students.html', teams=teams, pages=pages, curr_page=page)
+    return render_template('admin/students.html', students=students, pages=pages, curr_page=page)
 
 
-@admin.route('/admin/team/<int:studentid>', methods=['GET', 'POST'])
+@admin.route('/admin/student/<int:studentid>', methods=['GET', 'POST'])
 @admins_only
-def admin_team(studentid):
+def admin_student(studentid):
     user = Students.query.filter_by(id=studentid).first_or_404()
 
     if request.method == 'GET':
@@ -422,14 +422,14 @@ def admin_team(studentid):
         missing = Challenges.query.filter(not_(Challenges.id.in_(solve_ids))).all()
         last_seen = db.func.max(Tracking.date).label('last_seen')
         addrs = db.session.query(Tracking.ip, last_seen) \
-                          .filter_by(team=studentid) \
+                          .filter_by(student=studentid) \
                           .group_by(Tracking.ip) \
                           .order_by(last_seen.desc()).all()
         wrong_keys = WrongKeys.query.filter_by(studentid=studentid).order_by(WrongKeys.date.asc()).all()
         awards = Awards.query.filter_by(studentid=studentid).order_by(Awards.date.asc()).all()
         score = user.score()
         place = user.place()
-        return render_template('admin/student.html', solves=solves, team=user, addrs=addrs, score=score, missing=missing,
+        return render_template('admin/student.html', solves=solves, student=user, addrs=addrs, score=score, missing=missing,
                                place=place, wrong_keys=wrong_keys, awards=awards)
     elif request.method == 'POST':
         admin_user = request.form.get('admin', None)
@@ -483,18 +483,18 @@ def admin_team(studentid):
             return jsonify({'data': ['success']})
 
 
-@admin.route('/admin/team/<int:studentid>/mail', methods=['POST'])
+@admin.route('/admin/student/<int:studentid>/mail', methods=['POST'])
 @admins_only
 def email_user(studentid):
     message = request.form.get('msg', None)
-    team = Students.query.filter(Students.id == studentid).first()
-    if message and team:
-        if sendmail(team.email, message):
+    student = Students.query.filter(Students.id == studentid).first()
+    if message and student:
+        if sendmail(student.email, message):
             return '1'
     return '0'
 
 
-@admin.route('/admin/team/<int:studentid>/ban', methods=['POST'])
+@admin.route('/admin/student/<int:studentid>/ban', methods=['POST'])
 @admins_only
 def ban(studentid):
     user = Students.query.filter_by(id=studentid).first_or_404()
@@ -504,7 +504,7 @@ def ban(studentid):
     return redirect(url_for('admin.admin_scoreboard'))
 
 
-@admin.route('/admin/team/<int:studentid>/unban', methods=['POST'])
+@admin.route('/admin/student/<int:studentid>/unban', methods=['POST'])
 @admins_only
 def unban(studentid):
     user = Students.query.filter_by(id=studentid).first_or_404()
@@ -514,13 +514,13 @@ def unban(studentid):
     return redirect(url_for('admin.admin_scoreboard'))
 
 
-@admin.route('/admin/team/<int:studentid>/delete', methods=['POST'])
+@admin.route('/admin/student/<int:studentid>/delete', methods=['POST'])
 @admins_only
-def delete_team(studentid):
+def delete_student(studentid):
     try:
         WrongKeys.query.filter_by(studentid=studentid).delete()
         Solves.query.filter_by(studentid=studentid).delete()
-        Tracking.query.filter_by(team=studentid).delete()
+        Tracking.query.filter_by(student=studentid).delete()
         Students.query.filter_by(id=studentid).delete()
         db.session.commit()
         db.session.close()
@@ -555,10 +555,10 @@ def admin_graph(graph_type):
 @admins_only
 def admin_scoreboard():
     standings = get_standings(admin=True)
-    return render_template('admin/scoreboard.html', teams=standings)
+    return render_template('admin/scoreboard.html', students=standings)
 
 
-@admin.route('/admin/teams/<int:studentid>/awards', methods=['GET'])
+@admin.route('/admin/students/<int:studentid>/awards', methods=['GET'])
 @admins_only
 def admin_awards(studentid):
     awards = Awards.query.filter_by(studentid=studentid).all()
@@ -612,11 +612,11 @@ def delete_award(award_id):
 def admin_scores():
     score = db.func.sum(Challenges.value).label('score')
     quickest = db.func.max(Solves.date).label('quickest')
-    teams = db.session.query(Solves.studentid, Students.name, score).join(Students).join(Challenges).filter(Students.banned == False).group_by(Solves.studentid).order_by(score.desc(), quickest)
+    students = db.session.query(Solves.studentid, Students.name, score).join(Students).join(Challenges).filter(Students.banned == False).group_by(Solves.studentid).order_by(score.desc(), quickest)
     db.session.close()
-    json_data = {'teams': []}
-    for i, x in enumerate(teams):
-        json_data['teams'].append({'place': i + 1, 'id': x.studentid, 'name': x.name, 'score': int(x.score)})
+    json_data = {'students': []}
+    for i, x in enumerate(students):
+        json_data['students'].append({'place': i + 1, 'id': x.studentid, 'name': x.name, 'score': int(x.score)})
     return jsonify(json_data)
 
 
@@ -635,7 +635,7 @@ def admin_solves(studentid="all"):
             'id': x.id,
             'chal': x.chal.name,
             'chalid': x.chalid,
-            'team': x.studentid,
+            'student': x.studentid,
             'value': x.chal.value,
             'category': x.chal.category,
             'time': unix_time(x.date)
@@ -644,7 +644,7 @@ def admin_solves(studentid="all"):
         json_data['solves'].append({
             'chal': award.name,
             'chalid': None,
-            'team': award.studentid,
+            'student': award.studentid,
             'value': award.value,
             'category': award.category,
             'time': unix_time(award.date)
@@ -686,7 +686,7 @@ def delete_wrong_key(keyid):
 @admin.route('/admin/statistics', methods=['GET'])
 @admins_only
 def admin_stats():
-    teams_registered = db.session.query(db.func.count(Students.id)).first()[0]
+    students_registered = db.session.query(db.func.count(Students.id)).first()[0]
     wrong_count = db.session.query(db.func.count(WrongKeys.id)).first()[0]
     solve_count = db.session.query(db.func.count(Solves.id)).first()[0]
     challenge_count = db.session.query(db.func.count(Challenges.id)).first()[0]
@@ -710,7 +710,7 @@ def admin_stats():
     db.session.commit()
     db.session.close()
 
-    return render_template('admin/statistics.html', team_count=teams_registered,
+    return render_template('admin/statistics.html', student_count=students_registered,
                            wrong_count=wrong_count,
                            solve_count=solve_count,
                            challenge_count=challenge_count,
@@ -729,7 +729,7 @@ def admin_wrong_key(page):
     page_end = results_per_page * (page - 1) + results_per_page
 
     wrong_keys = WrongKeys.query.add_columns(WrongKeys.id, WrongKeys.chalid, WrongKeys.flag, WrongKeys.studentid, WrongKeys.date,
-                                             Challenges.name.label('chal_name'), Students.name.label('team_name')) \
+                                             Challenges.name.label('chal_name'), Students.name.label('student_name')) \
                                 .join(Challenges) \
                                 .join(Students) \
                                 .order_by(WrongKeys.date.desc()) \
@@ -752,7 +752,7 @@ def admin_correct_key(page):
     page_end = results_per_page * (page - 1) + results_per_page
 
     solves = Solves.query.add_columns(Solves.id, Solves.chalid, Solves.studentid, Solves.date, Solves.flag,
-                                      Challenges.name.label('chal_name'), Students.name.label('team_name')) \
+                                      Challenges.name.label('chal_name'), Students.name.label('student_name')) \
                          .join(Challenges) \
                          .join(Students) \
                          .order_by(Solves.date.desc()) \

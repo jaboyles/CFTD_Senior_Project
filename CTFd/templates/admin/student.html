@@ -43,7 +43,7 @@
             <label for="award-icon-input">Award Icon</label>
             <input type="file" id="award-icon-input" name="icon">
           </div>
-          <input type="hidden" value="{{ team.id }}" name="teamid" id="teamid">
+          <input type="hidden" value="{{ student.id }}" name="studentid" id="studentid">
           <input type="hidden" value="{{ nonce }}" name="nonce" id="nonce">
           <div class="modal-footer">
             <button type="submit" id="award-create-button" class="btn btn-primary">Create</button>
@@ -75,14 +75,14 @@
         </div>
     </div>
 
-    <h1 id="team-id">{{ team.name }}</h1>
-    <h2 id="team-email" class="text-center">{{ team.email }}</h2>
-    <h2 id="team-place" class="text-center">
+    <h1 id="student-id">{{ student.name }}</h1>
+    <h2 id="student-email" class="text-center">{{ student.email }}</h2>
+    <h2 id="student-place" class="text-center">
         {%if place %}
             {{ place }} <small>place</small>
         {% endif %}
     </h2>
-    <h2 id="team-score" class="text-center">
+    <h2 id="student-score" class="text-center">
         {%if score %}
             {{ score }} <small>points</small>
         {% endif %}
@@ -224,7 +224,7 @@
     <script src="{{ request.script_root }}/static/admin/js/vendor/moment.min.js"></script>
     <script src="{{ request.script_root }}/static/admin/js/vendor/plotly.min.js"></script>
     <script src="{{ request.script_root }}/static/admin/js/utils.js"></script>
-    <script src="{{ request.script_root }}/static/admin/js/team.js"></script>
+    <script src="{{ request.script_root }}/static/admin/js/student.js"></script>
     <script>
         $('#delete-solve').click(function (e) {
             e.preventDefault();
@@ -251,21 +251,21 @@
             var elem = $(this).parent().parent();
             var type = elem.attr('class');
             var chal_name = elem.find('.chal').text().trim();
-            var team_name = $("#team-id").text();
+            var student_name = $("#student-id").text();
             var key_id = elem.find('.flag').attr('id');
 
             if (type == 'chal-solve'){
                 var title = 'Delete Solve';
                 var description = "<span>Are you sure you want to delete " +
                                     "<strong>correct</strong> " +
-                                    "key submission for team: " +
-                                    "<strong id='confirm-team-name'></strong> " +
+                                    "key submission for student: " +
+                                    "<strong id='confirm-student-name'></strong> " +
                                     "in challenge: " +
                                     "<strong id='confirm-chal-name'></strong>?</span>"
 
 
                 var description = $($.parseHTML(description));
-                description.find('#confirm-team-name').text(team_name);
+                description.find('#confirm-student-name').text(student_name);
                 description.find('#confirm-chal-name').text(chal_name);
                 description = description.html()
 
@@ -274,13 +274,13 @@
                 var title = 'Delete Wrong Key';
                 var description = "<span>Are you sure you want to delete " +
                                     "<strong>incorrect</strong> " +
-                                    "key submission for team: " +
-                                    "<strong id='confirm-team-name'></strong> " +
+                                    "key submission for student: " +
+                                    "<strong id='confirm-student-name'></strong> " +
                                     "in challenge: " +
                                     "<strong id='confirm-chal-name'></strong>?</span>"
 
                 var description = $($.parseHTML(description));
-                description.find('#confirm-team-name').text(team_name);
+                description.find('#confirm-student-name').text(student_name);
                 description.find('#confirm-chal-name').text(chal_name);
                 description = description.html()
 
@@ -307,23 +307,23 @@
             var type = elem.attr('class');
             var chal = elem.find('.chal').attr('id');
             var chal_name = elem.find('.chal').text().trim();
-            var team = window.location.pathname.split('/').pop();
-            var team_name = $("#team-id").text();
+            var student = window.location.pathname.split('/').pop();
+            var student_name = $("#student-id").text();
 
             var title = 'Mark '+chal_name+' Solved';
             var description = "<span>Are you sure you want to mark " +
                                 "<strong id='confirm-chal-name'></strong> " +
-                                "as solved for team " +
-                                "<strong id='confirm-team-name'></strong> " +
+                                "as solved for student " +
+                                "<strong id='confirm-student-name'></strong> " +
                                 "?</span>";
 
 
             var description = $($.parseHTML(description));
-            description.find('#confirm-team-name').text(team_name);
+            description.find('#confirm-student-name').text(student_name);
             description.find('#confirm-chal-name').text(chal_name);
             description = description.html()
 
-            var action = '{{request.script_root }}/admin/solves/' + team + '/' + chal + '/solve';
+            var action = '{{request.script_root }}/admin/solves/' + student + '/' + chal + '/solve';
 
             var msg = {
                 title : title,
