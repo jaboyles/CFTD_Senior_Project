@@ -111,7 +111,7 @@ def static_html(template):
 
 @views.route('/students', defaults={'page': '1'})
 @views.route('/students/<int:page>')
-def teams(page):
+def students(page):
     page = abs(int(page))
     results_per_page = 50
     page_start = results_per_page * (page - 1)
@@ -119,16 +119,16 @@ def teams(page):
 
     if get_config('verify_emails'):
         count = Students.query.filter_by(verified=True, banned=False).count()
-        teams = Students.query.filter_by(verified=True, banned=False).slice(page_start, page_end).all()
+        students = Students.query.filter_by(verified=True, banned=False).slice(page_start, page_end).all()
     else:
         count = Students.query.filter_by(banned=False).count()
-        teams = Students.query.filter_by(banned=False).slice(page_start, page_end).all()
+        students = Students.query.filter_by(banned=False).slice(page_start, page_end).all()
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('students.html', students=teams, student_pages=pages, curr_page=page)
+    return render_template('students.html', students=students, student_pages=pages, curr_page=page)
 
 
 @views.route('/student/<int:studentid>', methods=['GET', 'POST'])
-def team(studentid):
+def student(studentid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
     user = Students.query.filter_by(id=studentid).first_or_404()
@@ -143,7 +143,7 @@ def team(studentid):
     elif request.method == 'POST':
         json = {'solves': []}
         for x in solves:
-            json['solves'].append({'id': x.id, 'chal': x.chalid, 'team': x.studentid})
+            json['solves'].append({'id': x.id, 'chal': x.chalid, 'student': x.studentid})
         return jsonify(json)
 
 
@@ -155,9 +155,6 @@ def profile():
 
             name = request.form.get('name')
             email = request.form.get('email')
-            website = request.form.get('website')
-            affiliation = request.form.get('affiliation')
-            country = request.form.get('country')
 
             user = Students.query.filter_by(id=session['id']).first()
 
@@ -174,32 +171,26 @@ def profile():
             if not valid_email:
                 errors.append("That email doesn't look right")
             if not get_config('prevent_name_change') and names and name != session['username']:
-                errors.append('That team name is already taken')
+                errors.append('That student name is already taken')
             if emails and emails.id != session['id']:
                 errors.append('That email has already been used')
             if not get_config('prevent_name_change') and name_len:
-                errors.append('Pick a longer team name')
-            if website.strip() and not validate_url(website):
-                errors.append("That doesn't look like a valid URL")
+                errors.append('Pick a longer student name')
 
             if len(errors) > 0:
-                return render_template('profile.html', name=name, email=email, website=website,
-                                       affiliation=affiliation, country=country, errors=errors)
+                return render_template('profile.html', name=name, email=email, errors=errors)
             else:
-                team = Students.query.filter_by(id=session['id']).first()
+                student = Students.query.filter_by(id=session['id']).first()
                 if not get_config('prevent_name_change'):
-                    team.name = name
-                if team.email != email.lower():
-                    team.email = email.lower()
+                    student.name = name
+                if student.email != email.lower():
+                    student.email = email.lower()
                     if get_config('verify_emails'):
-                        team.verified = False
-                session['username'] = team.name
+                        student.verified = False
+                session['username'] = student.name
 
                 if 'password' in request.form.keys() and not len(request.form['password']) == 0:
-                    team.password = bcrypt_sha256.encrypt(request.form.get('password'))
-                team.website = website
-                team.affiliation = affiliation
-                team.country = country
+                    student.password = bcrypt_sha256.encrypt(request.form.get('password'))
                 db.session.commit()
                 db.session.close()
                 return redirect(url_for('views.profile'))
