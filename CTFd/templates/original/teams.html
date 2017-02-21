@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron home">
+    <div class="container">
+        <h1>Teams</h1>
+    </div>
+</div>
+<div class="container main-container">
+    <table id="teamsboard" class="table table-striped">
+        <thead>
+            <tr>
+                <td><b>Team</b></td>
+                <td><b>Score</b></td>
+                <td><b>Number of Students</b></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for team in teams %}
+            <tr>
+                <td><a href="{{ request.script_root }}/team/{{ team.id }}">{{ team.name }}</a></td>
+                <td>{{ team.score() }}</td>
+                <td><span>{{ team.num_students() }}</span></td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
