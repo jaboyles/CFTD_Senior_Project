@@ -35,7 +35,7 @@
             {% for page in pages() %}
               <li><a href="{{ request.script_root }}/{{ page.route }}">{{ page.route|title }}</a></li>
             {% endfor %}
-            <li><a href="{{ request.script_root }}/teams">Teams</a></li>
+            <li><a href="{{ request.script_root }}/students">Students</a></li>
             <li><a href="{{ request.script_root }}/scoreboard">Scoreboard</a></li>
             <li><a href="{{ request.script_root }}/challenges">Challenges</a></li>
           </ul>
@@ -44,7 +44,7 @@
             {% if admin %}
             <li><a href="{{ request.script_root }}/admin">Admin</a></li>
             {% endif %}
-            <li><a href="{{ request.script_root }}/team/{{ id }}">Team</a></li>
+            <li><a href="{{ request.script_root }}/student/{{ id }}">Student</a></li>
             <li><a href="{{ request.script_root }}/profile">Profile</a></li>
             <li><a href="{{ request.script_root }}/logout">Logout</a></li>
           {% else %}

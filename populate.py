@@ -6,13 +6,15 @@ import hashlib
 import random
 
 from CTFd import create_app
-from CTFd.models import Teams, Solves, Challenges, WrongKeys, Keys, Files, Awards
+from CTFd.models import Students, Solves, Challenges, WrongKeys, Keys, Files, Awards, Teams, Sections
 
 app = create_app()
 
 USER_AMOUNT = 50
 CHAL_AMOUNT = 20
 AWARDS_AMOUNT = 5
+TEAMS_AMOUNT = 3
+SECTION_AMOUNT = 2
 
 categories = [
     'Exploitation',
@@ -178,6 +180,12 @@ extensions = [
     '.iso', '.toa', '.vcd', '.gam', '.nes', '.rom', '.sav', '.msi',
 ]
 
+teams = [
+    'Amazing', 'Puffins', 'Awesome', 'Fanatics', 'Pirates'
+]
+
+sectNums = [1, 2]
+
 
 def gen_sentence():
     return ' '.join(random.sample(lorems, 50))
@@ -185,6 +193,12 @@ def gen_sentence():
 
 def gen_name():
     return random.choice(names)
+
+def gen_team_name():
+    return random.choice(teams)
+
+def get_sect_number():
+    return random.choice(sectNums)
 
 
 def gen_email():
@@ -237,6 +251,31 @@ if __name__ == '__main__':
 
         db.session.commit()
 
+        # Generating Sections
+        print("GENERATING SECTIONS")
+
+        count = 0
+        while count < SECTION_AMOUNT:
+            section = Sections(count + 1, 123)
+            db.session.add(section)
+            count += 1
+
+        db.session.commit()
+
+        # Generating Teams
+        print("GENERATING TEAMS")
+        used = []
+        count = 0
+        while count < TEAMS_AMOUNT:
+            name = gen_team_name()
+            if name not in used:
+                used.append(name)
+                team = Teams(name, get_sect_number())
+                db.session.add(team)
+                count += 1
+
+        db.session.commit()
+
         # Generating Users
         print("GENERATING USERS")
         used = []
@@ -245,9 +284,9 @@ if __name__ == '__main__':
             name = gen_name()
             if name not in used:
                 used.append(name)
-                team = Teams(name, name.lower() + gen_email(), 'password')
-                team.verified = True
-                db.session.add(team)
+                student = Students(name, name.lower() + gen_email(), 'password', random.randrange(1, TEAMS_AMOUNT + 1))
+                student.verified = True
+                db.session.add(student)
                 count += 1
 
         db.session.commit()

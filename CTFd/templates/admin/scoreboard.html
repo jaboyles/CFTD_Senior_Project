@@ -17,7 +17,7 @@
         {% for team in teams %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td><a href="{{ request.script_root }}/admin/team/{{ team.teamid }}">{{ team.name }}</a></td>
+                <td><a href="{{ request.script_root }}/admin/team/{{ team.studentid }}">{{ team.name }}</a></td>
                 <td>{{ team.score }}</td>
                 <td>
                 {% if not team.banned %}

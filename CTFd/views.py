@@ -7,7 +7,7 @@ from passlib.hash import bcrypt_sha256
 
 from CTFd.utils import authed, is_setup, validate_url, get_config, set_config, sha512, cache, ctftime, view_after_ctf, ctf_started, \
     is_admin
-from CTFd.models import db, Teams, Solves, Awards, Files, Pages
+from CTFd.models import db, Students, Solves, Awards, Files, Pages, Teams
 
 views = Blueprint('views', __name__)
 
@@ -39,7 +39,7 @@ def setup():
             name = request.form['name']
             email = request.form['email']
             password = request.form['password']
-            admin = Teams(name, email, password)
+            admin = Students(name, email, password, 1)
             admin.admin = True
             admin.banned = True
 
@@ -109,41 +109,41 @@ def static_html(template):
         return render_template('page.html', content=page.html)
 
 
-@views.route('/teams', defaults={'page': '1'})
-@views.route('/teams/<int:page>')
-def teams(page):
+@views.route('/students', defaults={'page': '1'})
+@views.route('/students/<int:page>')
+def students(page):
     page = abs(int(page))
     results_per_page = 50
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
     if get_config('verify_emails'):
-        count = Teams.query.filter_by(verified=True, banned=False).count()
-        teams = Teams.query.filter_by(verified=True, banned=False).slice(page_start, page_end).all()
+        count = Students.query.filter_by(verified=True, banned=False).count()
+        teams = Students.query.filter_by(verified=True, banned=False).slice(page_start, page_end).all()
     else:
-        count = Teams.query.filter_by(banned=False).count()
-        teams = Teams.query.filter_by(banned=False).slice(page_start, page_end).all()
+        count = Students.query.filter_by(banned=False).count()
+        teams = Students.query.filter_by(banned=False).slice(page_start, page_end).all()
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+    return render_template('students.html', students=teams, student_pages=pages, curr_page=page)
 
 
-@views.route('/team/<int:teamid>', methods=['GET', 'POST'])
-def team(teamid):
+@views.route('/student/<int:studentid>', methods=['GET', 'POST'])
+def student(studentid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
-    user = Teams.query.filter_by(id=teamid).first_or_404()
-    solves = Solves.query.filter_by(teamid=teamid)
-    awards = Awards.query.filter_by(teamid=teamid).all()
+    user = Students.query.filter_by(id=studentid).first_or_404()
+    solves = Solves.query.filter_by(studentid=studentid)
+    awards = Awards.query.filter_by(studentid=studentid).all()
     score = user.score()
     place = user.place()
     db.session.close()
 
     if request.method == 'GET':
-        return render_template('team.html', solves=solves, awards=awards, team=user, score=score, place=place)
+        return render_template('student.html', solves=solves, awards=awards, student=user, score=score, place=place)
     elif request.method == 'POST':
         json = {'solves': []}
         for x in solves:
-            json['solves'].append({'id': x.id, 'chal': x.chalid, 'team': x.teamid})
+            json['solves'].append({'id': x.id, 'chal': x.chalid, 'team': x.studentid})
         return jsonify(json)
 
 
@@ -159,13 +159,13 @@ def profile():
             affiliation = request.form.get('affiliation')
             country = request.form.get('country')
 
-            user = Teams.query.filter_by(id=session['id']).first()
+            user = Students.query.filter_by(id=session['id']).first()
 
             if not get_config('prevent_name_change'):
-                names = Teams.query.filter_by(name=name).first()
+                names = Students.query.filter_by(name=name).first()
                 name_len = len(request.form['name']) == 0
 
-            emails = Teams.query.filter_by(email=email).first()
+            emails = Students.query.filter_by(email=email).first()
             valid_email = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email)
 
             if ('password' in request.form.keys() and not len(request.form['password']) == 0) and \
@@ -186,7 +186,7 @@ def profile():
                 return render_template('profile.html', name=name, email=email, website=website,
                                        affiliation=affiliation, country=country, errors=errors)
             else:
-                team = Teams.query.filter_by(id=session['id']).first()
+                team = Students.query.filter_by(id=session['id']).first()
                 if not get_config('prevent_name_change'):
                     team.name = name
                 if team.email != email.lower():
@@ -204,7 +204,7 @@ def profile():
                 db.session.close()
                 return redirect(url_for('views.profile'))
         else:
-            user = Teams.query.filter_by(id=session['id']).first()
+            user = Students.query.filter_by(id=session['id']).first()
             name = user.name
             email = user.email
             website = user.website
@@ -230,3 +230,25 @@ def file_handler(path):
                 else:
                     abort(403)
     return send_file(os.path.join(app.root_path, 'uploads', f.location))
+
+@views.route('/teams', defaults={'page': '1'})
+@views.route('/teams/<int:page>')
+def teams(page):
+    page = abs(int(page))
+    results_per_page = 50
+    page_start = results_per_page * (page - 1)
+    page_end = results_per_page * (page - 1) + results_per_page
+
+
+    count = Teams.query.filter_by().count()
+    teams = Teams.query.filter_by().slice(page_start, page_end).all()
+
+    pages = int(count / results_per_page) + (count % results_per_page > 0)
+    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+
+@views.route('/team/<int:teamid>')
+def team(teamid):
+
+    team = Teams.object.filter(id=teamid)
+    students =  Students.object.filter(teamid=teamid)
+    return render_template('team.html', team=team, students=students)

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block content %}
+<div class="jumbotron home">
+    <div class="container">
+        <h1>TeamsSolves</h1>
+    </div>
+</div>
+<div class="container main-container">
+    <table id="solvesboard" class="table table-striped">
+        <thead>
+            <tr>
+                <td><b>chalid</b></td>
+                <td><b>stuid</b></td>
+                <td><b>date</b></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for solve in solves %}
+            <tr>
+
+                <td>{{ solve.chalid }}</td>
+                <td><span>{{ solve.studentid }}</span></td>
+                <td>{{ solve.date }}</td>
+
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

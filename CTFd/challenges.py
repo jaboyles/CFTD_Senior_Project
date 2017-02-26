@@ -7,7 +7,7 @@ from flask import render_template, request, redirect, jsonify, url_for, session,
 from sqlalchemy.sql import or_
 
 from CTFd.utils import ctftime, view_after_ctf, authed, unix_time, get_kpm, user_can_view_challenges, is_admin, get_config, get_ip, is_verified, ctf_started, ctf_ended, ctf_name
-from CTFd.models import db, Challenges, Files, Solves, WrongKeys, Tags, Teams, Awards
+from CTFd.models import db, Challenges, Files, Solves, WrongKeys, Tags, Students, Awards
 
 challenges = Blueprint('challenges', __name__)
 
@@ -68,7 +68,7 @@ def chals():
 def solves_per_chal():
     if not user_can_view_challenges():
         return redirect(url_for('auth.login', next=request.path))
-    solves_sub = db.session.query(Solves.chalid, db.func.count(Solves.chalid).label('solves')).join(Teams, Solves.teamid == Teams.id).filter(Teams.banned == False).group_by(Solves.chalid).subquery()
+    solves_sub = db.session.query(Solves.chalid, db.func.count(Solves.chalid).label('solves')).join(Students, Solves.studentid == Students.id).filter(Students.banned == False).group_by(Solves.chalid).subquery()
     solves = db.session.query(solves_sub.columns.chalid, solves_sub.columns.solves, Challenges.name) \
                        .join(Challenges, solves_sub.columns.chalid == Challenges.id).all()
     json = {}
@@ -79,27 +79,27 @@ def solves_per_chal():
 
 
 @challenges.route('/solves')
-@challenges.route('/solves/<int:teamid>')
-def solves(teamid=None):
+@challenges.route('/solves/<int:studentid>')
+def solves(studentid=None):
     solves = None
     awards = None
-    if teamid is None:
+    if studentid is None:
         if is_admin():
-            solves = Solves.query.filter_by(teamid=session['id']).all()
+            solves = Solves.query.filter_by(studentid=session['id']).all()
         elif user_can_view_challenges():
-            solves = Solves.query.join(Teams, Solves.teamid == Teams.id).filter(Solves.teamid == session['id'], Teams.banned == False).all()
+            solves = Solves.query.join(Students, Solves.studentid == Students.id).filter(Solves.studentid == session['id'], Students.banned == False).all()
         else:
             return redirect(url_for('auth.login', next='solves'))
     else:
-        solves = Solves.query.filter_by(teamid=teamid).all()
-        awards = Awards.query.filter_by(teamid=teamid).all()
+        solves = Solves.query.filter_by(studentid=studentid).all()
+        awards = Awards.query.filter_by(studentid=studentid).all()
     db.session.close()
     json = {'solves': []}
     for solve in solves:
         json['solves'].append({
             'chal': solve.chal.name,
             'chalid': solve.chalid,
-            'team': solve.teamid,
+            'team': solve.studentid,
             'value': solve.chal.value,
             'category': solve.chal.category,
             'time': unix_time(solve.date)
@@ -109,7 +109,7 @@ def solves(teamid=None):
             json['solves'].append({
                 'chal': award.name,
                 'chalid': None,
-                'team': award.teamid,
+                'team': award.studentid,
                 'value': award.value,
                 'category': award.category,
                 'time': unix_time(award.date)
@@ -125,16 +125,16 @@ def attempts():
     chals = Challenges.query.add_columns('id').all()
     json = {'maxattempts': []}
     for chal, chalid in chals:
-        fails = WrongKeys.query.filter_by(teamid=session['id'], chalid=chalid).count()
+        fails = WrongKeys.query.filter_by(studentid=session['id'], chalid=chalid).count()
         if fails >= int(get_config("max_tries")) and int(get_config("max_tries")) > 0:
             json['maxattempts'].append({'chalid': chalid})
     return jsonify(json)
 
 
-@challenges.route('/fails/<int:teamid>', methods=['GET'])
-def fails(teamid):
-    fails = WrongKeys.query.filter_by(teamid=teamid).count()
-    solves = Solves.query.filter_by(teamid=teamid).count()
+@challenges.route('/fails/<int:studentid>', methods=['GET'])
+def fails(studentid):
+    fails = WrongKeys.query.filter_by(studentid=studentid).count()
+    solves = Solves.query.filter_by(studentid=studentid).count()
     db.session.close()
     json = {'fails': str(fails), 'solves': str(solves)}
     return jsonify(json)
@@ -144,7 +144,7 @@ def fails(teamid):
 def who_solved(chalid):
     if not user_can_view_challenges():
         return redirect(url_for('auth.login', next=request.path))
-    solves = Solves.query.join(Teams, Solves.teamid == Teams.id).filter(Solves.chalid == chalid, Teams.banned == False).order_by(Solves.date.asc())
+    solves = Solves.query.join(Students, Solves.studentid == Students.id).filter(Solves.chalid == chalid, Students.banned == False).order_by(Solves.date.asc())
     json = {'teams': []}
     for solve in solves:
         json['teams'].append({'id': solve.team.id, 'name': solve.team.name, 'date': solve.date})
@@ -158,7 +158,7 @@ def chal(chalid):
     if not user_can_view_challenges():
         return redirect(url_for('auth.login', next=request.path))
     if authed() and is_verified() and (ctf_started() or view_after_ctf()):
-        fails = WrongKeys.query.filter_by(teamid=session['id'], chalid=chalid).count()
+        fails = WrongKeys.query.filter_by(studentid=session['id'], chalid=chalid).count()
         logger = logging.getLogger('keys')
         data = (time.strftime("%m/%d/%Y %X"), session['username'].encode('utf-8'), request.form['key'].encode('utf-8'), get_kpm(session['id']))
         print("[{0}] {1} submitted {2} with kpm {3}".format(*data))
@@ -174,7 +174,7 @@ def chal(chalid):
             # return '3' # Submitting too fast
             return jsonify({'status': '3', 'message': "You're submitting keys too fast. Slow down."})
 
-        solves = Solves.query.filter_by(teamid=session['id'], chalid=chalid).first()
+        solves = Solves.query.filter_by(studentid=session['id'], chalid=chalid).first()
 
         # Challange not solved yet
         if not solves:
@@ -195,7 +195,7 @@ def chal(chalid):
                     print(x['flag'], key.strip().lower())
                     if x['flag'] and x['flag'].strip().lower() == key.strip().lower():
                         if ctftime():
-                            solve = Solves(chalid=chalid, teamid=session['id'], ip=get_ip(), flag=key)
+                            solve = Solves(chalid=chalid, studentid=session['id'], ip=get_ip(), flag=key)
                             db.session.add(solve)
                             db.session.commit()
                             db.session.close()
@@ -206,7 +206,7 @@ def chal(chalid):
                     res = re.match(x['flag'], key, re.IGNORECASE)
                     if res and res.group() == key:
                         if ctftime():
-                            solve = Solves(chalid=chalid, teamid=session['id'], ip=get_ip(), flag=key)
+                            solve = Solves(chalid=chalid, studentid=session['id'], ip=get_ip(), flag=key)
                             db.session.add(solve)
                             db.session.commit()
                             db.session.close()
