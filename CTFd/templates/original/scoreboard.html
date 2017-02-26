@@ -15,15 +15,15 @@
             <tr>
                 <td width="10px"><b>Place</b>
                 </td>
-                <td><b>Student</b>
+                <td><b>Team</b>
                 </td>
                 <td><b>Score</b>
                 </td>
             </tr>
         </thead>
         <tbody>
-        {% for student in students %}
-            <tr><td>{{ loop.index }}</td><td><a href="{{ request.script_root }}/student/{{ student.studentid }}">{{ student.name }}</a></td><td>{{ student.score }}</td></tr>
+        {% for team in teams %}
+            <tr><td>{{ loop.index }}</td><td><a href="{{ request.script_root }}/team/{{ team.teamid }}">{{ team.name }}</a></td><td>{{ team.score }}</td></tr>
         {% endfor %}
         </tbody>
     </table>
