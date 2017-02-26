@@ -38,7 +38,7 @@ def scoreboard_view():
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
     standings = get_standings()
-    return render_template('scoreboard.html', students=standings)
+    return render_template('scoreboard.html', teams=standings)
 
 
 @scoreboard.route('/scores')
