@@ -240,20 +240,9 @@ def team(teamid):
     team = Teams.query.filter_by(id=teamid)
     students = Students.query.filter_by(teamid=teamid)
     # get solves data by team id
-    # (optional) get awards data by team id
+    # get awards data by team id
     db.session.close()
     if request.method == 'GET':
         return render_template('team.html', team=team, students=students)
     elif request.method == 'POST':
         return None # return solves data by team id
-
-""""@views.route('/student/<int:studentid>', methods=['GET', 'POST'])
-def student(studentid):
-    if get_config('view_scoreboard_if_authed') and not authed():
-        return redirect(url_for('auth.login', next=request.path))
-    user = Students.query.filter_by(id=studentid).first_or_404()
-    solves = Solves.query.filter_by(studentid=studentid)
-    awards = Awards.query.filter_by(studentid=studentid).all()
-    score = user.score()
-    place = user.place()
-    db.session.close()"""
