@@ -2,7 +2,7 @@ from flask import render_template, jsonify, Blueprint, redirect, url_for, reques
 from sqlalchemy.sql.expression import union_all
 
 from CTFd.utils import unix_time, authed, get_config
-from CTFd.models import db, Students, Solves, Awards, Challenges
+from CTFd.models import db, Students, Solves, Awards, Challenges, Teams
 
 scoreboard = Blueprint('scoreboard', __name__)
 
@@ -14,16 +14,20 @@ def get_standings(admin=False, count=None):
     awards = db.session.query(Awards.studentid.label('studentid'), db.func.sum(Awards.value).label('score'), db.func.max(Awards.date).label('date')) \
         .group_by(Awards.studentid)
     results = union_all(scores, awards).alias('results')
-    sumscores = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'), db.func.max(results.columns.date).label('date')) \
+    sum = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'), db.func.max(results.columns.date).label('date')) \
         .group_by(results.columns.studentid).subquery()
+    sumscores = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'),
+                             db.func.sum(sum.columns.score).label('score'),
+                             db.func.max(sum.columns.date).label('date')).join(Students) \
+        .filter(Students.id == sum.columns.studentid, Students.teamid == Teams.id) \
+        .group_by(Teams.id).subquery()
     if admin:
-        standings_query = db.session.query(Students.id.label('studentid'), Students.name.label('name'), Students.banned, sumscores.columns.score) \
-                                    .join(sumscores, Students.id == sumscores.columns.studentid) \
+        standings_query = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'), sumscores.columns.score) \
+                                    .join(sumscores, Teams.id == sumscores.columns.teamid) \
                                     .order_by(sumscores.columns.score.desc(), sumscores.columns.date)
     else:
-        standings_query = db.session.query(Students.id.label('studentid'), Students.name.label('name'), sumscores.columns.score) \
-                                    .join(sumscores, Students.id == sumscores.columns.studentid) \
-                                    .filter(Students.banned == False) \
+        standings_query = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'), sumscores.columns.score) \
+                                    .join(sumscores, Teams.id == sumscores.columns.teamid) \
                                     .order_by(sumscores.columns.score.desc(), sumscores.columns.date)
     if count is None:
         standings = standings_query.all()
@@ -67,20 +71,20 @@ def topteams(count):
     standings = get_standings(count=count)
 
     for team in standings:
-        solves = Solves.query.filter_by(studentid=team.studentid).all()
-        awards = Awards.query.filter_by(studentid=team.studentid).all()
+        solves = db.session.query(Solves).join(Students).filter(Students.teamid == team.teamid).all()
+        awards = db.session.query(Awards).join(Students).filter(Students.teamid == team.teamid).all()
         json['scores'][team.name] = []
         for x in solves:
             json['scores'][team.name].append({
                 'chal': x.chalid,
-                'team': x.studentid,
+                'studemtid': x.studentid,
                 'value': x.chal.value,
                 'time': unix_time(x.date)
             })
         for award in awards:
             json['scores'][team.name].append({
                 'chal': None,
-                'team': award.studentid,
+                'student.id': award.studentid,
                 'value': award.value,
                 'time': unix_time(award.date)
             })
