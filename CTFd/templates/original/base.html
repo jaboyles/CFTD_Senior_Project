@@ -42,6 +42,15 @@
           <ul class="nav navbar-nav navbar-right">
           {% if username is defined %}
             {% if admin %}
+            <li>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                   aria-expanded="false">Section<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    {% for section in sections %}
+                        <li><a href="#">{{ section }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
             <li><a href="{{ request.script_root }}/admin">Admin</a></li>
             {% endif %}
             <li><a href="{{ request.script_root }}/student/{{ id }}">Student</a></li>
