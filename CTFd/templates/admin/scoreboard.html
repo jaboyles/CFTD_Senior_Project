@@ -8,25 +8,25 @@
         <thead>
             <tr>
                 <td width="10px"><b>Place</b></td>
-                <td><b>Team</b></td>
+                <td><b>Student</b></td>
                 <td><b>Score</b></td>
                 <td><b>Status</b></td>
             </tr>
         </thead>
         <tbody>
-        {% for team in teams %}
+        {% for student in students %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td><a href="{{ request.script_root }}/admin/team/{{ team.studentid }}">{{ team.name }}</a></td>
-                <td>{{ team.score }}</td>
+                <td><a href="{{ request.script_root }}/admin/student/{{ student.studentid }}">{{ student.name }}</a></td>
+                <td>{{ student.score }}</td>
                 <td>
-                {% if not team.banned %}
-                <form method="POST" style="margin:0;" action="{{ request.script_root }}/admin/team/{{ team.teamid }}/ban">
+                {% if not student.banned %}
+                <form method="POST" style="margin:0;" action="{{ request.script_root }}/admin/student/{{ student.studentid }}/ban">
                     <a onclick="$(this).parent().submit()">Ban</a>
                     <input type="hidden" value="{{ nonce }}" name="nonce">
                 </form>
                 {%else %}
-                <form method="POST" style="margin:0;" action="{{ request.script_root }}/admin/team/{{ team.teamid }}/unban">
+                <form method="POST" style="margin:0;" action="{{ request.script_root }}/admin/student/{{ student.studentid }}/unban">
                     <a onclick="$(this).parent().submit()">Unban</a>
                     <input type="hidden" value="{{ nonce }}" name="nonce">
                 </form>

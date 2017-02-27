@@ -27,8 +27,8 @@
                     <form method="POST" action="">
                         <input id="nonce" type="hidden" name="nonce" value="{{ nonce }}">
                         <div class="small-6 small-centered text-center columns">
-                            <p>Are you sure you want to delete incorrect key submission for team: <strong
-                                    id="confirm-team-name"></strong> in challenge: <strong
+                            <p>Are you sure you want to delete incorrect key submission for student: <strong
+                                    id="confirm-student-name"></strong> in challenge: <strong
                                     id="confirm-chal-name"></strong>?</p>
                             <a onclick="$('#confirm').modal('hide')" class="btn btn-primary">No</a>
                             <button class="btn btn-danger" id="delete-solve" type="button">Yes</button>
@@ -38,10 +38,10 @@
             </div>
         </div>
     </div>
-    <table id="teamsboard" class="table table-striped">
+    <table id="studentsboard" class="table table-striped">
         <thead>
             <tr>
-                <td class="text-center"><b>Team</b>
+                <td class="text-center"><b>Student</b>
                 </td>
                 <td class="text-center"><b>Challenge</b>
                 </td>
@@ -56,7 +56,7 @@
         <tbody>
             {% for wrong_key in wrong_keys %}
             <tr>
-                <td class="text-center team" id="{{ wrong_key.teamid }}"><a href="{{ request.script_root }}/admin/team/{{ wrong_key.teamid }}">{{ wrong_key.team_name }}</a>
+                <td class="text-center student" id="{{ wrong_key.studentid }}"><a href="{{ request.script_root }}/admin/student/{{ wrong_key.studentid }}">{{ wrong_key.student_name }}</a>
                 <td class="text-center chal" id="{{ wrong_key.chalid }}">{{ wrong_key.chal_name }}</td>
                 <td class="text-center solve-time"><script>document.write( moment({{ wrong_key.date|unix_time_millis }}).local().format('MMMM Do, h:mm:ss A'))</script></td>
                 <td class="text-center flag" id="{{ wrong_key.id }}">{{ wrong_key.flag }}</td>
@@ -97,9 +97,9 @@
             })
         });
 
-        function load_confirm_modal(key_id, team_name, chal_name) {
+        function load_confirm_modal(key_id, student_name, chal_name) {
             var modal = $('#confirm')
-            modal.find('#confirm-team-name').text(team_name);
+            modal.find('#confirm-student-name').text(student_name);
             modal.find('#confirm-chal-name').text(chal_name);
             $('#confirm form').attr('action', '{{ request.script_root }}/admin/wrong_keys/' + key_id + '/delete');
             $('#confirm').modal('show');
@@ -109,10 +109,10 @@
             var elem = $(this).parent().parent();
             var chal = elem.find('.chal').attr('id');
             var chal_name = elem.find('.chal').text().trim();
-            var team = elem.find('.team').attr('id');
-            var team_name = elem.find('.team').text().trim();
+            var student = elem.find('.student').attr('id');
+            var student_name = elem.find('.student').text().trim();
             var key_id = elem.find('.flag').attr('id');
-            load_confirm_modal(key_id, team_name, chal_name);
+            load_confirm_modal(key_id, student_name, chal_name);
         });
     </script>
 {% endblock %}

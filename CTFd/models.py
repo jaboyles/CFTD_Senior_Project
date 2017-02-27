@@ -185,6 +185,7 @@ class Students(db.Model):
     name = db.Column(db.String(128), unique=True)
     email = db.Column(db.String(128), unique=True)
     teamid = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    section = db.Column(db.Integer)
     password = db.Column(db.String(128))
     bracket = db.Column(db.String(32))
     banned = db.Column(db.Boolean, default=False)

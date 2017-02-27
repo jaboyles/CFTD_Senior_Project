@@ -120,12 +120,12 @@ def students(page):
 
     if get_config('verify_emails'):
         count = Students.query.filter_by(verified=True, banned=False).count()
-        teams = Students.query.filter_by(verified=True, banned=False).slice(page_start, page_end).all()
+        students = Students.query.filter_by(verified=True, banned=False).slice(page_start, page_end).all()
     else:
         count = Students.query.filter_by(banned=False).count()
-        teams = Students.query.filter_by(banned=False).slice(page_start, page_end).all()
+        students = Students.query.filter_by(banned=False).slice(page_start, page_end).all()
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('students.html', students=teams, student_pages=pages, curr_page=page)
+    return render_template('students.html', students=students, student_pages=pages, curr_page=page)
 
 
 @views.route('/student/<int:studentid>', methods=['GET', 'POST'])
@@ -144,7 +144,7 @@ def student(studentid):
     elif request.method == 'POST':
         json = {'solves': []}
         for x in solves:
-            json['solves'].append({'id': x.id, 'chal': x.chalid, 'team': x.studentid})
+            json['solves'].append({'id': x.id, 'chal': x.chalid, 'student': x.studentid})
         return jsonify(json)
 
 
@@ -156,9 +156,6 @@ def profile():
 
             name = request.form.get('name')
             email = request.form.get('email')
-            website = request.form.get('website')
-            affiliation = request.form.get('affiliation')
-            country = request.form.get('country')
 
             user = Students.query.filter_by(id=session['id']).first()
 
@@ -175,32 +172,26 @@ def profile():
             if not valid_email:
                 errors.append("That email doesn't look right")
             if not get_config('prevent_name_change') and names and name != session['username']:
-                errors.append('That team name is already taken')
+                errors.append('That student name is already taken')
             if emails and emails.id != session['id']:
                 errors.append('That email has already been used')
             if not get_config('prevent_name_change') and name_len:
-                errors.append('Pick a longer team name')
-            if website.strip() and not validate_url(website):
-                errors.append("That doesn't look like a valid URL")
+                errors.append('Pick a longer student name')
 
             if len(errors) > 0:
-                return render_template('profile.html', name=name, email=email, website=website,
-                                       affiliation=affiliation, country=country, errors=errors)
+                return render_template('profile.html', name=name, email=email, errors=errors)
             else:
-                team = Students.query.filter_by(id=session['id']).first()
+                student = Students.query.filter_by(id=session['id']).first()
                 if not get_config('prevent_name_change'):
-                    team.name = name
-                if team.email != email.lower():
-                    team.email = email.lower()
+                    student.name = name
+                if student.email != email.lower():
+                    student.email = email.lower()
                     if get_config('verify_emails'):
-                        team.verified = False
-                session['username'] = team.name
+                        student.verified = False
+                session['username'] = student.name
 
                 if 'password' in request.form.keys() and not len(request.form['password']) == 0:
-                    team.password = bcrypt_sha256.encrypt(request.form.get('password'))
-                team.website = website
-                team.affiliation = affiliation
-                team.country = country
+                    student.password = bcrypt_sha256.encrypt(request.form.get('password'))
                 db.session.commit()
                 db.session.close()
                 return redirect(url_for('views.profile'))
@@ -208,13 +199,10 @@ def profile():
             user = Students.query.filter_by(id=session['id']).first()
             name = user.name
             email = user.email
-            website = user.website
-            affiliation = user.affiliation
-            country = user.country
             prevent_name_change = get_config('prevent_name_change')
             confirm_email = get_config('verify_emails') and not user.verified
-            return render_template('profile.html', name=name, email=email, website=website, affiliation=affiliation,
-                                   country=country, prevent_name_change=prevent_name_change, confirm_email=confirm_email)
+            return render_template('profile.html', name=name, email=email, prevent_name_change=prevent_name_change,
+                                   confirm_email=confirm_email)
     else:
         return redirect(url_for('auth.login'))
 
@@ -240,7 +228,6 @@ def teams(page):
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
-
     count = Teams.query.filter_by().count()
     teams = Teams.query.filter_by().slice(page_start, page_end).all()
 
@@ -249,10 +236,17 @@ def teams(page):
 
 @views.route('/team/<int:teamid>')
 def team(teamid):
-
-    team = Teams.object.filter(id=teamid)
-    students =  Students.object.filter(teamid=teamid)
-    return render_template('team.html', team=team, students=students)
+    if get_config('view_scoreboard_if_authed') and not authed():
+        return redirect(url_for('auth.login', next=request.path))
+    team = Teams.query.filter_by(id=teamid)
+    students = Students.query.filter_by(teamid=teamid)
+    # get solves data by team id
+    # get awards data by team id
+    db.session.close()
+    if request.method == 'GET':
+        return render_template('team.html', team=team, students=students)
+    elif request.method == 'POST':
+        return None # return solves data by team id
 
 @views.route('/team/<int:teamid>/challenges')
 def teamChallenges(teamid):
