@@ -4,10 +4,11 @@ import re
 from flask import current_app as app, render_template, request, redirect, abort, jsonify, url_for, session, Blueprint, Response, send_file
 from jinja2.exceptions import TemplateNotFound
 from passlib.hash import bcrypt_sha256
+from sqlalchemy import union_all
 
 from CTFd.utils import authed, is_setup, validate_url, get_config, set_config, sha512, cache, ctftime, view_after_ctf, ctf_started, \
     is_admin
-from CTFd.models import db, Students, Solves, Awards, Files, Pages, Teams
+from CTFd.models import db, Students, Solves, Awards, Files, Pages, Teams, Challenges
 
 views = Blueprint('views', __name__)
 
@@ -252,3 +253,43 @@ def team(teamid):
     team = Teams.object.filter(id=teamid)
     students =  Students.object.filter(teamid=teamid)
     return render_template('team.html', team=team, students=students)
+
+@views.route('/team/<int:teamid>/challenges')
+def teamChallenges(teamid):
+    team = Teams.query.filter_by(id=teamid).first()
+    challenges = team.challenges()
+    return render_template('tChallenges.html', team=team, challenges=challenges)
+
+@views.route('/team/<int:teamid>/solves')
+def teamSolves(teamid):
+    team = Teams.query.filter_by(id=teamid).first()
+    solves = team.solves()
+    return render_template('tSolves.html', team=team, solves=solves)
+
+@views.route('/test')
+def test():
+    score = db.func.sum(Challenges.value).label('score')
+    date = db.func.max(Solves.date).label('date')
+    scores = db.session.query(Solves.studentid.label('studentid'), score, date).join(Challenges).group_by(
+        Solves.studentid)
+    awards = db.session.query(Awards.studentid.label('studentid'), db.func.sum(Awards.value).label('score'),
+                              db.func.max(Awards.date).label('date')) \
+        .group_by(Awards.studentid)
+    res = db.session.query(union_all(scores, awards).alias('results')).all()
+
+    results = union_all(scores, awards).alias('results')
+
+    sum = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'),
+                                 db.func.max(results.columns.date).label('date')) \
+        .group_by(results.columns.studentid).all()
+    sumscores = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'),
+                                 db.func.max(results.columns.date).label('date')) \
+        .group_by(results.columns.studentid).subquery()
+    teams = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'),
+                             db.func.sum(sumscores.columns.score).label('score'),
+                             db.func.max(sumscores.columns.date).label('date')).join(Students) \
+        .filter(Students.id == sumscores.columns.studentid, Students.teamid == Teams.id) \
+        .group_by(Teams.id).all()
+
+
+    return render_template('test.html', scores=scores, awards=awards, results=res, sumscores=sum, teams=teams)
