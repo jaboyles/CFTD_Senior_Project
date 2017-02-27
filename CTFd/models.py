@@ -74,6 +74,8 @@ class Challenges(db.Model):
         return '<chal %r>' % self.name
 
 
+
+
 class Awards(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     studentid = db.Column(db.Integer, db.ForeignKey('students.id'))
@@ -164,6 +166,20 @@ class Teams(db.Model):
         count = Students.query.filter_by(teamid=self.id).count()
         return count
 
+    def solves(self):
+        solves = db.session.query(Solves).join(Students).filter(Students.teamid == self.id).all()
+        return solves
+
+    def challenges(self):
+        challenges = db.session.query(Challenges).join(Solves).join(Students).filter(Students.teamid == self.id,
+                                                                                     Challenges.id == Solves.chalid,
+                                                                                     Students.id == Solves.studentid)
+        return challenges
+
+    def awards(self):
+        awards = db.session.query(Awards).join(Students).filter(Students.teamid == self.id).all()
+        return awards
+
 class Students(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True)
@@ -230,6 +246,11 @@ class Solves(db.Model):
 
     def __repr__(self):
         return '<solves %r>' % self.chal
+
+    def team(self):
+        team = db.session.query(Teams).join(Students).join(Solves).filter(Students.id == self.studentid,
+                                                                             Teams.id == Students.teamid).first()
+        return team.id
 
 
 class WrongKeys(db.Model):
