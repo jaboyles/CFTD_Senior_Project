@@ -73,6 +73,12 @@ class Challenges(db.Model):
     def __repr__(self):
         return '<chal %r>' % self.name
 
+    def num_students_solve(self, teamid):
+        print(teamid)
+        count = db.session.query(Students).join(Solves).join(Challenges).filter(self.id == Solves.chalid,
+                                                                                   Students.id == Solves.studentid,
+                                                                                   Students.teamid == teamid).count()
+        return count
 
 
 
@@ -179,6 +185,7 @@ class Teams(db.Model):
     def awards(self):
         awards = db.session.query(Awards).join(Students).filter(Students.teamid == self.id).all()
         return awards
+
 
 class Students(db.Model):
     id = db.Column(db.Integer, primary_key=True)
