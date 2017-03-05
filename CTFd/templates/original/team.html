@@ -33,25 +33,33 @@
 
     <div class="clearfix"></div>
 
-    <table id="chals" class="table table-striped">
-        <thead>
-            <tr>
-                <td><b>name</b></td>
-                <td><b>Students Solved</b></td>
+    <div class="row">
+        <h3>Challenges</h3>
+        <table id="chals" class="table table-striped">
+            <thead>
+                <tr>
+                    <td><b>Name</b></td>
+                    <td><b>Category</b></td>
+                    <td><b>Value</b></td>
+                    <td><b>Students Solved/{{ team.num_students() }}</b></td>
+                    <td><b>Points Earned From Challenge</b></td>
+                </tr>
+            </thead>
+            <tbody>
+            {% for chal in challenges %}
+                <tr>
+                    <td><span>{{ chal.name }}</span></td>
+                    <td><span>{{ chal.category }}</span></td>
+                    <td><span>{{ chal.value }}</span></td>
+                    <td><span>{{ chal.num_students_solve(team.id) }}</span></td>
+                    <td><span>{{ chal.value * chal.num_students_solve(team.id) }}</span></td>
 
-            </tr>
-        </thead>
-        <tbody>
-        {% for chal in challenges %}
-            <tr>
-                <td><span>{{ chal.name }}</span></td>
-                <td><span>{{ chal.num_students_solve(team.id) }}</span></td>
+                </tr>
 
-            </tr>
-
-        {% endfor %}
-        </tbody>
-    </table>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!---{% if awards %}
     <div class="row">
