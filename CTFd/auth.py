@@ -155,16 +155,16 @@ def login():
     if request.method == 'POST':
         errors = []
         name = request.form['name']
-        team = Students.query.filter_by(name=name).first()
-        if team:
-            if team and bcrypt_sha256.verify(request.form['password'], team.password):
+        student = Students.query.filter_by(name=name).first()
+        if student:
+            if student and bcrypt_sha256.verify(request.form['password'], student.password):
                 try:
                     session.regenerate() # NO SESSION FIXATION FOR YOU
                 except:
                     pass # TODO: Some session objects don't implement regenerate :(
-                session['username'] = team.name
-                session['id'] = team.id
-                session['admin'] = team.admin
+                session['username'] = student.name
+                session['id'] = student.id
+                session['admin'] = student.admin
                 session['nonce'] = sha512(os.urandom(10))
                 db.session.close()
 

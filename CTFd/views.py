@@ -132,6 +132,8 @@ def students(page):
 def student(studentid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
+    if not is_admin() and session['id'] != studentid:
+        return render_template('errors/403.html')
     user = Students.query.filter_by(id=studentid).first_or_404()
     solves = Solves.query.filter_by(studentid=studentid)
     awards = Awards.query.filter_by(studentid=studentid).all()
