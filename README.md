@@ -20,3 +20,13 @@ https://reversing.ctfd.io/
 Logo by [Laura Barbera](http://www.laurabb.com/)
 
 Theme by [Christopher Thompson](https://github.com/breadchris)
+
+Cam's Instructions
+to run virtual environment from base directory
+virtualenv -p /usr/bin/python2.7.1 env
+source env/bin/activate
+cd CFTD_Senior_Project
+./prepare.sh
+
+and to end it run
+deactivate
