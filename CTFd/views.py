@@ -238,13 +238,14 @@ def teams(page):
 def team(teamid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
-    team = Teams.query.filter_by(id=teamid)
+    team = Teams.query.filter_by(id=teamid).first()
     students = Students.query.filter_by(teamid=teamid)
     # get solves data by team id
     # get awards data by team id
+    challenges = Challenges.query.all()
     db.session.close()
     if request.method == 'GET':
-        return render_template('team.html', team=team, students=students)
+        return render_template('team.html', team=team, students=students, challenges=challenges)
     elif request.method == 'POST':
         return None # return solves data by team id
 
@@ -262,28 +263,7 @@ def teamSolves(teamid):
 
 @views.route('/test')
 def test():
-    score = db.func.sum(Challenges.value).label('score')
-    date = db.func.max(Solves.date).label('date')
-    scores = db.session.query(Solves.studentid.label('studentid'), score, date).join(Challenges).group_by(
-        Solves.studentid)
-    awards = db.session.query(Awards.studentid.label('studentid'), db.func.sum(Awards.value).label('score'),
-                              db.func.max(Awards.date).label('date')) \
-        .group_by(Awards.studentid)
-    res = db.session.query(union_all(scores, awards).alias('results')).all()
-
-    results = union_all(scores, awards).alias('results')
-
-    sum = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'),
-                                 db.func.max(results.columns.date).label('date')) \
-        .group_by(results.columns.studentid).all()
-    sumscores = db.session.query(results.columns.studentid, db.func.sum(results.columns.score).label('score'),
-                                 db.func.max(results.columns.date).label('date')) \
-        .group_by(results.columns.studentid).subquery()
-    teams = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'),
-                             db.func.sum(sumscores.columns.score).label('score'),
-                             db.func.max(sumscores.columns.date).label('date')).join(Students) \
-        .filter(Students.id == sumscores.columns.studentid, Students.teamid == Teams.id) \
-        .group_by(Teams.id).all()
+    challenges = Challenges.query.all()
 
 
-    return render_template('test.html', scores=scores, awards=awards, results=res, sumscores=sum, teams=teams)
+    return render_template('test.html', challenges=challenges)

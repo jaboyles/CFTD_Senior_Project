@@ -13,110 +13,25 @@
     <table id="score" class="table table-striped">
         <thead>
             <tr>
-                <td><b>stuid</b></td>
-                <td><b>score</b></td>
-                <td><b>date</b></td>
-            </tr>
-        </thead>
-        <tbody>
-        {% for score in scores %}
-            <tr>
-
-                <td>{{ score.studentid }}</td>
-                <td><span>{{ score.score }}</span></td>
-                <td>{{ score.date }}</td>
-
-            </tr>
-
-        {% endfor %}
-        </tbody>
-    </table>
-    <table id="awards" class="table table-striped">
-        <thead>
-            <tr>
-                <td><b>stuid</b></td>
-                <td><b>score</b></td>
-                <td><b>date</b></td>
-            </tr>
-        </thead>
-        <tbody>
-        {% for award in awards %}
-            <tr>
-
-                <td>{{ award.studentid }}</td>
-                <td><span>{{ award.score }}</span></td>
-                <td>{{ award.date }}</td>
-
-            </tr>
-
-        {% endfor %}
-        </tbody>
-    </table>
-     <table id="results" class="table table-striped">
-        <thead>
-            <tr>
-                <td><b>stuid</b></td>
-                <td><b>score</b></td>
-                <td><b>date</b></td>
-            </tr>
-        </thead>
-        <tbody>
-        {% for res in results %}
-            <tr>
-
-                <td>{{ res.studentid }}</td>
-                <td><span>{{ res.score }}</span></td>
-                <td>{{ res.date }}</td>
-
-            </tr>
-
-        {% endfor %}
-        </tbody>
-    </table>
-    <table id="sumscores" class="table table-striped">
-        <thead>
-            <tr>
-                <td><b>stuid</b></td>
-                <td><b>score</b></td>
-                <td><b>date</b></td>
-            </tr>
-        </thead>
-        <tbody>
-        {% for res in sumscores %}
-            <tr>
-
-                <td>{{ res.studentid }}</td>
-                <td><span>{{ res.score }}</span></td>
-                <td>{{ res.date }}</td>
-
-            </tr>
-
-        {% endfor %}
-        </tbody>
-    </table>
-    <table id="teams" class="table table-striped">
-        <thead>
-            <tr>
-                <td><b>teamid</b></td>
                 <td><b>name</b></td>
-                <td><b>score</b></td>
-                <td><b>date</b></td>
+                <td><b>Students Solved</b></td>
+
             </tr>
         </thead>
         <tbody>
-        {% for res in teams %}
+        {% for chal in challenges %}
             <tr>
-
-                <td>{{ res.teamid }}</td>
-                <td>{{ res.name }}</td>
-                <td><span>{{ res.score }}</span></td>
-                <td>{{ res.date }}</td>
+                <td><span>{{ chal.name }}</span></td>
+                <td><span>{{ chal.num_students_solve(1) }}</span></td>
 
             </tr>
 
         {% endfor %}
         </tbody>
     </table>
+
+
+
 </div>
 {% endblock %}
 

@@ -23,6 +23,7 @@
         </h2>
     </div>
 
+
     <br>
 
     <div id="keys-pie-graph"></div>
@@ -31,6 +32,26 @@
     <div id="score-graph"></div>
 
     <div class="clearfix"></div>
+
+    <table id="chals" class="table table-striped">
+        <thead>
+            <tr>
+                <td><b>name</b></td>
+                <td><b>Students Solved</b></td>
+
+            </tr>
+        </thead>
+        <tbody>
+        {% for chal in challenges %}
+            <tr>
+                <td><span>{{ chal.name }}</span></td>
+                <td><span>{{ chal.num_students_solve(team.id) }}</span></td>
+
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
 
     <!---{% if awards %}
     <div class="row">
