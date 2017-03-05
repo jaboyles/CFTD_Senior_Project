@@ -22,11 +22,14 @@ Logo by [Laura Barbera](http://www.laurabb.com/)
 Theme by [Christopher Thompson](https://github.com/breadchris)
 
 Cam's Instructions
+
 to run virtual environment from base directory
-virtualenv -p /usr/bin/python2.7.1 env
-source env/bin/activate
-cd CFTD_Senior_Project
-./prepare.sh
+
+1. virtualenv -p /usr/bin/python2.7.1 env
+2. source env/bin/activate
+3. cd CFTD_Senior_Project
+4. ./prepare.sh
 
 and to end it run
-deactivate
+
+1. deactivate
