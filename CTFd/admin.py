@@ -9,7 +9,8 @@ from sqlalchemy.sql import not_
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
     container_stop, container_start, get_themes, cache, upload_file
-from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, Pages, Config, DatabaseError
+from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, Pages, Config, DatabaseError, \
+    Sections
 from CTFd.scoreboard import get_standings
 
 admin = Blueprint('admin', __name__)
@@ -528,6 +529,21 @@ def delete_student(studentid):
         return '0'
     else:
         return '1'
+
+
+@admin.route('/admin/sections', methods=['GET'])
+@admins_only
+def get_sections():
+    sections = Sections.query.all()
+
+    section_list = []
+    for section in sections:
+        section_list.append({
+            'sectionNumber': section.sectionNumber,
+            'courseNumber': section.couseNumber
+        })
+    json_data = {'section': section_list}
+    return jsonify(json_data)
 
 
 @admin.route('/admin/graphs/<graph_type>')
