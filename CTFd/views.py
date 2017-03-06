@@ -8,7 +8,7 @@ from sqlalchemy import union_all
 
 from CTFd.utils import authed, is_setup, validate_url, get_config, set_config, sha512, cache, ctftime, view_after_ctf, ctf_started, \
     is_admin
-from CTFd.models import db, Students, Solves, Awards, Files, Pages, Teams, Challenges
+from CTFd.models import db, Students, Solves, Awards, Files, Pages, Teams, Challenges, Sections
 
 views = Blueprint('views', __name__)
 
@@ -40,7 +40,8 @@ def setup():
             name = request.form['name']
             email = request.form['email']
             password = request.form['password']
-            admin = Students(name, email, password, 1)
+            sect = Sections.query.first()
+            admin = Students(name, email, password, 1, sect)
             admin.admin = True
             admin.banned = True
 
