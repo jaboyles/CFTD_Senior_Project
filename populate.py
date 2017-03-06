@@ -23,7 +23,7 @@ categories = [
     'Forensics',
     'Scripting',
     'Cryptography',
-    'Networking',
+    'Networking'
 ]
 lorems = [
     'Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.',
