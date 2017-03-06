@@ -22,6 +22,13 @@ def admin_view():
 
     return redirect(url_for('auth.login'))
 
+@admin.route('/admin/section/<int:sectionid>', methods=['PUT'])
+@admins_only
+def admin_section(sectionid):
+    user = Students.query.filter_by(admin == True).first()
+    user.sectionid = sectionid
+    db.session.update(user)
+    db.sesstion.commit()
 
 @admin.route('/admin/graphs')
 @admins_only
