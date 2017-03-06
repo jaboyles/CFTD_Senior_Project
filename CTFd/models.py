@@ -200,11 +200,12 @@ class Students(db.Model):
     joined = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     sectionid = db.Column(db.Integer, db.ForeignKey('sections.sectionNumber'))
 
-    def __init__(self, name, email, password, teamid):
+    def __init__(self, name, email, password, teamid, sectionid):
         self.name = name
         self.email = email
         self.password = bcrypt_sha256.encrypt(str(password))
         self.teamid = teamid
+        self.sectionid = sectionid
 
     def __repr__(self):
         return '<student %r>' % self.name
