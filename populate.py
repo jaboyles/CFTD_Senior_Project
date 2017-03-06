@@ -13,7 +13,7 @@ app = create_app()
 USER_AMOUNT = 50
 CHAL_AMOUNT = 20
 AWARDS_AMOUNT = 5
-TEAMS_AMOUNT = 3
+TEAMS_AMOUNT = 4
 SECTION_AMOUNT = 2
 
 categories = [
@@ -266,13 +266,17 @@ if __name__ == '__main__':
         print("GENERATING TEAMS")
         used = []
         count = 0
+        teamIDS = []
         while count < TEAMS_AMOUNT:
             name = gen_team_name()
             if name not in used:
                 used.append(name)
-                team = Teams(name, get_sect_number())
+                sectNum = get_sect_number()
+                team = Teams(name, sectNum)
                 db.session.add(team)
                 count += 1
+                teamIDS.append(sectNum)
+
 
         db.session.commit()
 
@@ -284,7 +288,9 @@ if __name__ == '__main__':
             name = gen_name()
             if name not in used:
                 used.append(name)
-                student = Students(name, name.lower() + gen_email(), 'password', random.randrange(1, TEAMS_AMOUNT + 1))
+                teamid = random.randrange(1, TEAMS_AMOUNT + 1)
+                student = Students(name, name.lower() + gen_email(), 'password', teamid,
+                                   teamIDS[teamid - 1])
                 student.verified = True
                 db.session.add(student)
                 count += 1
