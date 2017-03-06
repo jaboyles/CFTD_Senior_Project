@@ -198,6 +198,7 @@ class Students(db.Model):
     verified = db.Column(db.Boolean, default=False)
     admin = db.Column(db.Boolean, default=False)
     joined = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    sectionid = db.Column(db.Integer, db.ForeignKey('sections.sectionNumber'))
 
     def __init__(self, name, email, password, teamid):
         self.name = name
