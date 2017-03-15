@@ -5,7 +5,6 @@ import os
 from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint
 from passlib.hash import bcrypt_sha256
 from sqlalchemy.sql import not_
-from sqlalchemy import update
 
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
@@ -25,14 +24,14 @@ def admin_view():
     return redirect(url_for('auth.login'))
 
 
-@admin.route('/admin/section/<int:sectionNo>', methods=['PUT'])
+@admin.route('/admin/section/<int:sectionid>', methods=['PUT'])
 @admins_only
-def set_section(sectionNo):
+def set_section(sectionid):
     user = Students.query.filter_by(admin=True).first()
-    user.sectionid = sectionNo
+    user.sectionid = sectionid
     db.session.commit()
     db.session.close()
-    return str(sectionNo)
+    return str(sectionid)
 
 
 @admin.route('/admin/section', methods=['GET'])
