@@ -5,6 +5,7 @@ import os
 from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint
 from passlib.hash import bcrypt_sha256
 from sqlalchemy.sql import not_
+from sqlalchemy import update
 
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
@@ -23,13 +24,39 @@ def admin_view():
 
     return redirect(url_for('auth.login'))
 
-@admin.route('/admin/section/<int:sectionid>', methods=['PUT'])
+
+@admin.route('/admin/section/<int:sectionNo>', methods=['PUT'])
 @admins_only
-def admin_section(sectionid):
-    user = Students.query.filter_by(admin == True).first()
-    user.sectionid = sectionid
-    db.session.update(user)
-    db.sesstion.commit()
+def set_section(sectionNo):
+    user = Students.query.filter_by(admin=True).first()
+    user.sectionid = sectionNo
+    db.session.commit()
+    db.session.close()
+    return str(sectionNo)
+
+
+@admin.route('/admin/section', methods=['GET'])
+@admins_only
+def get_section():
+    user = Students.query.filter_by(admin=True).first()
+    sectionid = user.sectionid
+    return str(sectionid)
+
+
+@admin.route('/admin/sections', methods=['GET'])
+@admins_only
+def get_sections():
+    sections = Sections.query.all()
+
+    section_list = []
+    for section in sections:
+        section_list.append({
+            'sectionNumber': section.sectionNumber,
+            'courseNumber': section.courseNumber
+        })
+    json_data = {'sections': section_list}
+    return jsonify(json_data)
+
 
 @admin.route('/admin/graphs')
 @admins_only
@@ -536,21 +563,6 @@ def delete_student(studentid):
         return '0'
     else:
         return '1'
-
-
-@admin.route('/admin/sections', methods=['GET'])
-@admins_only
-def get_sections():
-    sections = Sections.query.all()
-
-    section_list = []
-    for section in sections:
-        section_list.append({
-            'sectionNumber': section.sectionNumber,
-            'courseNumber': section.couseNumber
-        })
-    json_data = {'section': section_list}
-    return jsonify(json_data)
 
 
 @admin.route('/admin/graphs/<graph_type>')
