@@ -1,11 +1,12 @@
 // Have a method to set the section number for the admin
-function setSection(section){
+function setSection(section) {
     $.ajax({
         method: "PUT",
         url: script_root + '/admin/section/' + section,
         success: function() {
             console.log("Section changed to " + section);
             getSection();
+            location.reload();
         },
         error: function() {
             console.log("Section change failed");
@@ -13,7 +14,15 @@ function setSection(section){
     });
 }
 
-function getSection(){
+function getSectionsCallback(sections) {
+    for (var i = 0; i < sections.length; i++) {
+        var sectionNumber = sections[i].sectionNumber;
+        var dropdownItem = "<li onclick=setSection(" + sectionNumber + ")><a href='#'>" + sectionNumber + "</a></li>"
+        $("#section-dropdown-menu").append(dropdownItem);
+    }
+}
+
+function getSection() {
     $.ajax({
         method: "GET",
         url: script_root + '/admin/section',
@@ -26,16 +35,17 @@ function getSection(){
     });
 }
 
-function getSections(){
+function getSections() {
     $.ajax({
         method: "GET",
         url: script_root + '/admin/sections',
         success: function(sectionData) {
-            sectionString = "The sections are: ";
+            /*sectionString = "The sections are: ";
             for (i = 0; i < sectionData['sections'].length; i++) {
                 sectionString += sectionData['sections'][i].sectionNumber + " ";
             }
-            console.log(sectionString);
+            console.log(sectionString);*/
+            getSectionsCallback(sectionData['sections']);
         },
         error: function() {
             console.log("Section listing failed");
@@ -44,6 +54,5 @@ function getSections(){
 }
 
 $(document).ready(function() {
-    setSection(2);
     getSections();
 })
