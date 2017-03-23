@@ -10,7 +10,7 @@ from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
     container_stop, container_start, get_themes, cache, upload_file
 from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, Pages, Config, DatabaseError, \
-    Sections
+    Sections, Teams
 from CTFd.scoreboard import get_standings
 
 admin = Blueprint('admin', __name__)
@@ -563,6 +563,20 @@ def delete_student(studentid):
     else:
         return '1'
 
+
+@admin.route('/admin/teams', defaults={'page': '1'})
+@admin.route('/admin/teams/<int:page>')
+@admins_only
+def admin_teams(page):
+    page = abs(int(page))
+    results_per_page = 50
+    page_start = results_per_page * (page - 1)
+    page_end = results_per_page * (page - 1) + results_per_page
+
+    teams = Teams.query.order_by(Teams.id.asc()).slice(page_start, page_end).all()
+    count = db.session.query(db.func.count(Teams.id)).first()[0]
+    pages = int(count / results_per_page) + (count % results_per_page > 0)
+    return render_template('admin/teams.html', teams=teams, pages=pages, curr_page=page)
 
 @admin.route('/admin/graphs/<graph_type>')
 @admins_only
