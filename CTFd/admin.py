@@ -854,7 +854,7 @@ def teams(page):
     teams = Teams.query.filter_by().slice(page_start, page_end).all()
 
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+    return render_template('admin/teams.html', teams=teams, pages=pages, curr_page=page)
 
 @admin.route('/admin/team/<int:teamid>')
 def team(teamid):
