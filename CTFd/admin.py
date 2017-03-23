@@ -841,3 +841,44 @@ def admin_update_chal():
     db.session.commit()
     db.session.close()
     return redirect(url_for('admin.admin_chals'))
+
+@admin.route('/admin/teams', defaults={'page': '1'})
+@admin.route('/admin/teams/<int:page>')
+def teams(page):
+    page = abs(int(page))
+    results_per_page = 50
+    page_start = results_per_page * (page - 1)
+    page_end = results_per_page * (page - 1) + results_per_page
+
+    count = Teams.query.filter_by().count()
+    teams = Teams.query.filter_by().slice(page_start, page_end).all()
+
+    pages = int(count / results_per_page) + (count % results_per_page > 0)
+    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+
+@admin.route('/admin/team/<int:teamid>')
+def team(teamid):
+    if get_config('view_scoreboard_if_authed') and not authed():
+        return redirect(url_for('auth.login', next=request.path))
+    team = Teams.query.filter_by(id=teamid).first()
+    students = Students.query.filter_by(teamid=teamid)
+    # get solves data by team id
+    # get awards data by team id
+    challenges = Challenges.query.all()
+    db.session.close()
+    if request.method == 'GET':
+        return render_template('admin/team.html', team=team, students=students, challenges=challenges)
+    elif request.method == 'POST':
+        return None # return solves data by team id
+
+@admin.route('/admin/team/<int:teamid>/challenges')
+def teamChallenges(teamid):
+    team = Teams.query.filter_by(id=teamid).first()
+    challenges = team.challenges()
+    return render_template('tChallenges.html', team=team, challenges=challenges)
+
+@admin.route('/admin/team/<int:teamid>/solves')
+def teamSolves(teamid):
+    team = Teams.query.filter_by(id=teamid).first()
+    solves = team.solves()
+    return render_template('tSolves.html', team=team, solves=solves)
