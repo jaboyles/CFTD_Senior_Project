@@ -41,7 +41,7 @@ def get_standings(admin=False, count=None):
 
 @scoreboard.route('/scoreboard')
 def scoreboard_view():
-    if get_config('view_scoreboard_if_authed') and not authed():
+    if get_config('view_scoreboard_if_authed') or not authed():
         return redirect(url_for('auth.login', next=request.path))
     standings = get_standings()
     return render_template('scoreboard.html', teams=standings)
@@ -49,7 +49,7 @@ def scoreboard_view():
 
 @scoreboard.route('/scores')
 def scores():
-    if get_config('view_scoreboard_if_authed') and not authed():
+    if get_config('view_scoreboard_if_authed') or not authed():
         return redirect(url_for('auth.login', next=request.path))
     standings = get_standings()
     json = {'standings': []}
@@ -60,7 +60,7 @@ def scores():
 
 @scoreboard.route('/top/<int:count>')
 def topteams(count):
-    if get_config('view_scoreboard_if_authed') and not authed():
+    if get_config('view_scoreboard_if_authed') or not authed():
         return redirect(url_for('auth.login', next=request.path))
     try:
         count = int(count)
