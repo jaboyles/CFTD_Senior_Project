@@ -120,14 +120,14 @@ def register():
             return render_template('register.html', errors=errors, name=request.form['name'], email=request.form['email'], password=request.form['password'])
         else:
             with app.app_context():
-                team = Students(name, email.lower(), password)
-                db.session.add(team)
+                student = Students(name, email.lower(), password)
+                db.session.add(student)
                 db.session.commit()
                 db.session.flush()
 
-                session['username'] = team.name
-                session['id'] = team.id
-                session['admin'] = team.admin
+                session['username'] = student.name
+                session['id'] = student.id
+                session['student'] = student.admin
                 session['nonce'] = sha512(os.urandom(10))
 
                 if can_send_mail() and get_config('verify_emails'): # Confirming users is enabled and we can send email.

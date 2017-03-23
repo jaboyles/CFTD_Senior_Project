@@ -52,6 +52,12 @@
             <li><a href="{{ request.script_root }}/admin/chals">Challenges</a></li>
             <li><a href="{{ request.script_root }}/admin/statistics">Statistics</a></li>
             <li><a href="{{ request.script_root }}/admin/config">Config</a></li>
+            <li>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                   aria-expanded="false">Section<span class="caret"></span></a>
+              <ul id="section-dropdown-menu" class="dropdown-menu">
+              </ul>
+            </li>
           </ul>
         </div>
       </div>
@@ -64,6 +70,7 @@
     <script src="{{ request.script_root }}/static/admin/js/vendor/jquery.min.js"></script>
     <script src="{{ request.script_root }}/static/admin/js/vendor/marked.min.js"></script>
     <script src="{{ request.script_root }}/static/admin/js/vendor/bootstrap.min.js"></script>
+    <script src="{{ request.script_root }}/static/admin/js/sections.js"></script>
     {% block scripts %} {% endblock %}
 </body>
 

@@ -41,7 +41,7 @@ def setup():
             email = request.form['email']
             password = request.form['password']
             sect = Sections.query.first()
-            admin = Students(name, email, password, 1, sect)
+            admin = Students(name, email, password, 1, sect.sectionNumber)
             admin.admin = True
             admin.banned = True
 
