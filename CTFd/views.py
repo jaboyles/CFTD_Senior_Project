@@ -226,7 +226,7 @@ def file_handler(path):
 @views.route('/teams', defaults={'page': '1'})
 @views.route('/teams/<int:page>')
 def teams(page):
-    if get_config('view_scoreboard_if_authed') and not authed():
+    if get_config('view_scoreboard_if_authed') or not authed():
         return redirect(url_for('auth.login', next=request.path))
 
     studentid = session['id']
