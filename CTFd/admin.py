@@ -2,7 +2,7 @@ import hashlib
 import json
 import os
 
-from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint
+from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint, session
 from passlib.hash import bcrypt_sha256
 from sqlalchemy.sql import not_
 
@@ -439,7 +439,9 @@ def admin_students(page):
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
-    students = Students.query.order_by(Students.id.asc()).slice(page_start, page_end).all()
+    admin = Students.query.filter_by(id=session['id']).first()
+
+    students = Students.query.filter_by(sectionid=admin.sectionid).order_by(Students.id.asc()).slice(page_start, page_end).all()
     count = db.session.query(db.func.count(Students.id)).first()[0]
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('admin/students.html', students=students, pages=pages, curr_page=page)
@@ -449,6 +451,10 @@ def admin_students(page):
 @admins_only
 def admin_student(studentid):
     user = Students.query.filter_by(id=studentid).first_or_404()
+    admin = Students.query.filter_by(id=session['id']).first()
+
+    if admin.sectionid != user.sectionid:
+        return render_template('errors/403.html')
 
     if request.method == 'GET':
         solves = Solves.query.filter_by(studentid=studentid).all()
@@ -562,21 +568,6 @@ def delete_student(studentid):
         return '0'
     else:
         return '1'
-
-
-@admin.route('/admin/teams', defaults={'page': '1'})
-@admin.route('/admin/teams/<int:page>')
-@admins_only
-def admin_teams(page):
-    page = abs(int(page))
-    results_per_page = 50
-    page_start = results_per_page * (page - 1)
-    page_end = results_per_page * (page - 1) + results_per_page
-
-    teams = Teams.query.order_by(Teams.id.asc()).slice(page_start, page_end).all()
-    count = db.session.query(db.func.count(Teams.id)).first()[0]
-    pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('admin/teams.html', teams=teams, pages=pages, curr_page=page)
 
 
 @admin.route('/admin/graphs/<graph_type>')
@@ -898,17 +889,24 @@ def teams(page):
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
+    stuid = session['id']
+    student = Students.query.filter_by(id=stuid).first()
     count = Teams.query.filter_by().count()
-    teams = Teams.query.filter_by().slice(page_start, page_end).all()
+    teams = Teams.query.filter_by(sectionNumber=student.sectionid).slice(page_start, page_end).all()
 
     pages = int(count / results_per_page) + (count % results_per_page > 0)
-    return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+    return render_template('admin/teams.html', teams=teams, pages=pages, curr_page=page)
 
 @admin.route('/admin/team/<int:teamid>')
 def team(teamid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
     team = Teams.query.filter_by(id=teamid).first()
+    student = Students.query.filter_by(id=session['id']).first()
+
+    if student.sectionid != team.sectionNumber:
+        return render_template('errors/403.html')
+
     students = Students.query.filter_by(teamid=teamid)
     # get solves data by team id
     # get awards data by team id
