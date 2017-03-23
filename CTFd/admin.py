@@ -24,6 +24,39 @@ def admin_view():
     return redirect(url_for('auth.login'))
 
 
+@admin.route('/admin/section/<int:sectionid>', methods=['PUT'])
+@admins_only
+def set_section(sectionid):
+    user = Students.query.filter_by(admin=True).first()
+    user.sectionid = sectionid
+    db.session.commit()
+    db.session.close()
+    return str(sectionid)
+
+
+@admin.route('/admin/section', methods=['GET'])
+@admins_only
+def get_section():
+    user = Students.query.filter_by(admin=True).first()
+    sectionid = user.sectionid
+    return str(sectionid)
+
+
+@admin.route('/admin/sections', methods=['GET'])
+@admins_only
+def get_sections():
+    sections = Sections.query.all()
+
+    section_list = []
+    for section in sections:
+        section_list.append({
+            'sectionNumber': section.sectionNumber,
+            'courseNumber': section.courseNumber
+        })
+    json_data = {'sections': section_list}
+    return jsonify(json_data)
+
+
 @admin.route('/admin/graphs')
 @admins_only
 def admin_graphs():
