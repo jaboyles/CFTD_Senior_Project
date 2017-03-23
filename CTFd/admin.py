@@ -578,6 +578,7 @@ def admin_teams(page):
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('admin/teams.html', teams=teams, pages=pages, curr_page=page)
 
+
 @admin.route('/admin/graphs/<graph_type>')
 @admins_only
 def admin_graph(graph_type):
