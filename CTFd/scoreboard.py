@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, Blueprint, redirect, url_for, request
+from flask import render_template, jsonify, Blueprint, redirect, url_for, request, session
 from sqlalchemy.sql.expression import union_all
 
 from CTFd.utils import unix_time, authed, get_config
@@ -8,6 +8,8 @@ scoreboard = Blueprint('scoreboard', __name__)
 
 
 def get_standings(admin=False, count=None):
+    user = Students.query.filter_by(id=session['id']).first()
+
     score = db.func.sum(Challenges.value).label('score')
     date = db.func.max(Solves.date).label('date')
     scores = db.session.query(Solves.studentid.label('studentid'), score, date).join(Challenges).group_by(Solves.studentid)
@@ -19,7 +21,7 @@ def get_standings(admin=False, count=None):
     sumscores = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'),
                              db.func.sum(sum.columns.score).label('score'),
                              db.func.max(sum.columns.date).label('date')).join(Students) \
-        .filter(Students.id == sum.columns.studentid, Students.teamid == Teams.id) \
+        .filter(Students.id == sum.columns.studentid, Students.teamid == Teams.id, Students.sectionid == user.sectionid) \
         .group_by(Teams.id).subquery()
     if admin:
         standings_query = db.session.query(Teams.id.label('teamid'), Teams.name.label('name'), sumscores.columns.score) \
@@ -67,17 +69,19 @@ def topteams(count):
     if count > 20 or count < 0:
         count = 10
 
+    user = Students.query.filter_by(id=session['id']).first()
+
     json = {'scores': {}}
     standings = get_standings(count=count)
 
     for team in standings:
-        solves = db.session.query(Solves).join(Students).filter(Students.teamid == team.teamid).all()
-        awards = db.session.query(Awards).join(Students).filter(Students.teamid == team.teamid).all()
+        solves = db.session.query(Solves).join(Students).filter(Students.teamid == team.teamid, Students.sectionid == user.sectionid).all()
+        awards = db.session.query(Awards).join(Students).filter(Students.teamid == team.teamid, Students.sectionid == user.sectionid).all()
         json['scores'][team.name] = []
         for x in solves:
             json['scores'][team.name].append({
                 'chal': x.chalid,
-                'studemtid': x.studentid,
+                'student.id': x.studentid,
                 'value': x.chal.value,
                 'time': unix_time(x.date)
             })

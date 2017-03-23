@@ -54,5 +54,7 @@ function getSections() {
 }
 
 $(document).ready(function() {
-    getSections();
+    if (admin == "True") {
+        getSections();
+    }
 })
