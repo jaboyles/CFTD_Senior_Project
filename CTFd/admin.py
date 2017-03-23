@@ -439,7 +439,9 @@ def admin_students(page):
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
-    students = Students.query.order_by(Students.id.asc()).slice(page_start, page_end).all()
+    admin = Students.query.filter_by(id=session['id']).first()
+
+    students = Students.query.filter_by(sectionid=admin.sectionid).order_by(Students.id.asc()).slice(page_start, page_end).all()
     count = db.session.query(db.func.count(Students.id)).first()[0]
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('admin/students.html', students=students, pages=pages, curr_page=page)
@@ -449,6 +451,10 @@ def admin_students(page):
 @admins_only
 def admin_student(studentid):
     user = Students.query.filter_by(id=studentid).first_or_404()
+    admin = Students.query.filter_by(id=session['id']).first()
+
+    if admin.sectionid != user.sectionid:
+        return render_template('errors/403.html')
 
     if request.method == 'GET':
         solves = Solves.query.filter_by(studentid=studentid).all()
