@@ -567,7 +567,7 @@ def delete_student(studentid):
 @admin.route('/admin/teams', defaults={'page': '1'})
 @admin.route('/admin/teams/<int:page>')
 @admins_only
-def admin_teamss(page):
+def admin_teams(page):
     page = abs(int(page))
     results_per_page = 50
     page_start = results_per_page * (page - 1)
