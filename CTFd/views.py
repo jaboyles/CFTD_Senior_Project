@@ -226,13 +226,19 @@ def file_handler(path):
 @views.route('/teams', defaults={'page': '1'})
 @views.route('/teams/<int:page>')
 def teams(page):
+    if get_config('view_scoreboard_if_authed') and not authed():
+        return redirect(url_for('auth.login', next=request.path))
+
+    studentid = session['id']
+
     page = abs(int(page))
     results_per_page = 50
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
+    student = Students.query.filter_by(id=studentid).first()
     count = Teams.query.filter_by().count()
-    teams = Teams.query.filter_by().slice(page_start, page_end).all()
+    teams = Teams.query.filter_by(sectionNumber=student.sectionid).slice(page_start, page_end).all()
 
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
@@ -242,6 +248,11 @@ def team(teamid):
     if get_config('view_scoreboard_if_authed') and not authed():
         return redirect(url_for('auth.login', next=request.path))
     team = Teams.query.filter_by(id=teamid).first()
+    student = Students.query.filter_by(id = session['id']).first()
+
+    if student.sectionid != team.sectionNumber:
+        return render_template('errors/403.html')
+
     students = Students.query.filter_by(teamid=teamid)
     # get solves data by team id
     # get awards data by team id
