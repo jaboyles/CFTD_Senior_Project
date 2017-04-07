@@ -92,10 +92,11 @@ class Awards(db.Model):
     category = db.Column(db.String(80))
     icon = db.Column(db.Text)
 
-    def __init__(self, studentid, name, value):
+    def __init__(self, studentid, name, value, description):
         self.studentid = studentid
         self.name = name
         self.value = value
+        self.description = description
 
     def __repr__(self):
         return '<award %r>' % self.name

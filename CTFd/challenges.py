@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import time
+from datetime import datetime
 
 from flask import render_template, request, redirect, jsonify, url_for, session, Blueprint
 from sqlalchemy.sql import or_
@@ -138,6 +139,21 @@ def fails(studentid):
     db.session.close()
     json = {'fails': str(fails), 'solves': str(solves)}
     return jsonify(json)
+
+@challenges.route("/award/<int:userId>", methods=['GET'])
+def awards(userId):
+    name = request.args.get('name')
+    value = request.args.get('value')
+    description = request.args.get('description')
+    lastAward = Awards.query.filter_by(studentid=userId, name=name).order_by(Awards.date.desc()).first()
+    if (lastAward is None) or (lastAward.date.date() < datetime.today().date()):
+        award = Awards(userId, name, value, description)
+        db.session.add(award)
+        db.session.commit()
+        db.session.close()
+        return jsonify({'status': '200', 'message': 'Applied award correctly'})
+    else:
+        return jsonify({'status': '403', 'message': 'Cannot apply two awards to same user in one day'})
 
 
 @challenges.route('/chal/<int:chalid>/solves', methods=['GET'])
