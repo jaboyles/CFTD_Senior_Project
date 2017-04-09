@@ -4,7 +4,7 @@ import re
 import time
 import urllib
 
-from flask import current_app as app, render_template, request, redirect, url_for, session, Blueprint
+from flask import current_app as app, render_template, request, redirect, url_for, session, Blueprint, jsonify
 from itsdangerous import TimedSerializer, BadTimeSignature, Signer, BadSignature
 from passlib.hash import bcrypt_sha256
 
@@ -185,6 +185,38 @@ def login():
     else:
         db.session.close()
         return render_template('login.html')
+
+@auth.route('/loginAndroid', methods=['POST'])
+def loginAndroid():
+    errors = []
+    name = request.form['name']
+    student = Students.query.filter_by(name=name).first()
+    if student:
+        if student and bcrypt_sha256.verify(request.form['password'], student.password):
+            try:
+                session.regenerate() # NO SESSION FIXATION FOR YOU
+            except:
+                pass # TODO: Some session objects don't implement regenerate :(
+            session['username'] = student.name
+            session['id'] = student.id
+            session['admin'] = student.admin
+            session['nonce'] = sha512(os.urandom(10))
+            db.session.close()
+
+            logger = logging.getLogger('logins')
+            logger.warn("[{0}] {1} logged in".format(time.strftime("%m/%d/%Y %X"), session['username'].encode('utf-8')))
+
+            if request.args.get('next') and is_safe_url(request.args.get('next')):
+                return redirect(request.args.get('next'))
+            return jsonify({'status': '200', 'nonce': session['nonce']})
+        else: # This user exists but the password is wrong
+            errors.append("Your username or password is incorrect")
+            db.session.close()
+            return jsonify({'status': '400', 'message': 'Invalid Login'})
+    else:  # This user just doesn't exist
+        errors.append("Your username or password is incorrect")
+        db.session.close()
+        return render_template('login.html', errors=errors)
 
 
 @auth.route('/logout')
