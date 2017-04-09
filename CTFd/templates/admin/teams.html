@@ -69,28 +69,7 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                             <label for="name">Team Name</label>
                             <input type="text" class="form-control" name="name" id="name" placeholder="Enter new team name" required>
                         </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" class="form-control" name="email" id="email" placeholder="Enter new email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" name="password" id="password" />
-                        </div>
-                        <div class="form-group">
-                            <label for="website">Website</label>
-                            <input type="text" class="form-control" name="website" id="website" placeholder="Enter website">
-                        </div>
-                        <div class="form-group">
-                            <label for="affiliation">Affiliation</label>
-                            <input type="text" class="form-control" name="affiliation" id="affiliation" placeholder="Enter affiliation">
-                        </div>
-                        <div class="form-group">
-                            <label for="affiliation">Country</label>
-                            <input type="text" class="form-control" name="country" id="country" placeholder="Enter country">
-                        </div>
                         <div id="results">
-
                         </div>
                         <button id="update-user" type="submit" class="btn btn-theme btn-outlined pull-right">Update</button>
                     </form>
@@ -105,18 +84,6 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                 </td>
                 <td class="text-center"><b>Team</b>
                 </td>
-                <td class="text-center"><b>Email</b>
-                </td>
-                <td class="text-center"><b>Website</b>
-                </td>
-                <td class="text-center"><b>Affiliation</b>
-                </td>
-                <td class="text-center"><b>Country</b>
-                </td>
-                <td class="text-center"><b>Admin</b>
-                </td>
-                <td class="text-center"><b>Verified</b>
-                </td>
                 <td class="text-center"><b>Settings</b>
                 </td>
             </tr>
@@ -126,23 +93,6 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             <tr name="{{ team.id }}">
                 <td class="team-id">{{ team.id }}</td>
                 <td class="team-name"><a href="{{ request.script_root }}/admin/team/{{ team.id }}">{{ team.name | truncate(32) }}</a>
-                </td>
-                <td class="team-email">{{ team.email | truncate(32) }}</td>
-                <td class="team-website">{% if team.website and team.website.startswith('http') %}<a href="{{ team.website }}">{{ team.website | truncate(32) }}</a>{% endif %}
-                </td>
-                <td class="team-affiliation"><span>{% if team.affiliation %}{{ team.affiliation | truncate(20) }}{% endif %}</span>
-                </td>
-                <td class="team-country"><span>{% if team.country %}{{ team.country }}{% endif %}</span>
-                </td>
-                <td class="team-admin">
-                    <div class="center-block checkbox text-center">
-                        <input type="checkbox" {% if team.admin %}checked{% endif %}>
-                    </div>
-                </td>
-                <td class="team-verified">
-                    <div class="center-block checkbox text-center">
-                        <input type="checkbox" {% if team.verified %}checked{% endif %}>
-                    </div>
                 </td>
                 <td class="text-center"><span>
                     <i class="fa fa-pencil-square-o"></i>
