@@ -166,7 +166,6 @@ def login():
                 session['id'] = student.id
                 session['admin'] = student.admin
                 session['nonce'] = sha512(os.urandom(10))
-                print session['nonce']
                 db.session.close()
 
                 logger = logging.getLogger('logins')
