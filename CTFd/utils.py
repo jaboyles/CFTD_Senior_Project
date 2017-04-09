@@ -131,7 +131,7 @@ def init_utils(app):
     def csrf():
         if not session.get('nonce'):
             session['nonce'] = sha512(os.urandom(10))
-        if request.method == "POST":
+        if request.method == "POST" and request.path != "/loginAndroid":
             if session['nonce'] != request.form.get('nonce'):
                 abort(403)
 
