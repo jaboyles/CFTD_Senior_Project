@@ -62,13 +62,17 @@ class Challenges(db.Model):
     category = db.Column(db.String(80))
     flags = db.Column(db.Text)
     hidden = db.Column(db.Boolean)
+    level = db.Column(db.Integer)
+    prereq = db.Column(db.Integer, db.ForeignKey('challenges.id'))
 
-    def __init__(self, name, description, value, category, flags):
+    def __init__(self, name, description, value, category, flags, level, prereq):
         self.name = name
         self.description = description
         self.value = value
         self.category = category
         self.flags = json.dumps(flags)
+        self.level = level
+        self.prereq = prereq
 
     def __repr__(self):
         return '<chal %r>' % self.name
