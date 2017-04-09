@@ -923,11 +923,9 @@ def admin_team(teamid):
 @admin.route('/admin/team/new', methods=['POST'])
 def admin_create_team():
     team = Teams(request.form['name'], request.form['sectionid'])
-
     db.session.add(team)
     db.session.commit()
     db.sesstion.close()
-
     return redirect(url_for('admin.admin_teams'))
 
 
