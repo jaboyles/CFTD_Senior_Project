@@ -77,18 +77,6 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                             <label for="password">Password</label>
                             <input type="password" class="form-control" name="password" id="password" />
                         </div>
-                        <div class="form-group">
-                            <label for="website">Website</label>
-                            <input type="text" class="form-control" name="website" id="website" placeholder="Enter website">
-                        </div>
-                        <div class="form-group">
-                            <label for="affiliation">Affiliation</label>
-                            <input type="text" class="form-control" name="affiliation" id="affiliation" placeholder="Enter affiliation">
-                        </div>
-                        <div class="form-group">
-                            <label for="affiliation">Country</label>
-                            <input type="text" class="form-control" name="country" id="country" placeholder="Enter country">
-                        </div>
                         <div id="results">
 
                         </div>
@@ -107,12 +95,6 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                 </td>
                 <td class="text-center"><b>Email</b>
                 </td>
-                <td class="text-center"><b>Website</b>
-                </td>
-                <td class="text-center"><b>Affiliation</b>
-                </td>
-                <td class="text-center"><b>Country</b>
-                </td>
                 <td class="text-center"><b>Admin</b>
                 </td>
                 <td class="text-center"><b>Verified</b>
@@ -128,12 +110,6 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                 <td class="student-name"><a href="{{ request.script_root }}/admin/student/{{ student.id }}">{{ student.name | truncate(32) }}</a>
                 </td>
                 <td class="student-email">{{ student.email | truncate(32) }}</td>
-                <td class="student-website">{% if student.website and student.website.startswith('http') %}<a href="{{ student.website }}">{{ student.website | truncate(32) }}</a>{% endif %}
-                </td>
-                <td class="student-affiliation"><span>{% if student.affiliation %}{{ student.affiliation | truncate(20) }}{% endif %}</span>
-                </td>
-                <td class="student-country"><span>{% if student.country %}{{ student.country }}{% endif %}</span>
-                </td>
                 <td class="student-admin">
                     <div class="center-block checkbox text-center">
                         <input type="checkbox" {% if student.admin %}checked{% endif %}>

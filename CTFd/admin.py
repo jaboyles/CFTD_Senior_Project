@@ -442,7 +442,7 @@ def admin_students(page):
     admin = Students.query.filter_by(id=session['id']).first()
 
     students = Students.query.filter_by(sectionid=admin.sectionid).order_by(Students.id.asc()).slice(page_start, page_end).all()
-    count = db.session.query(db.func.count(Students.id)).first()[0]
+    count = db.session.query(db.func.count(Students.id)).filter_by(sectionid=admin.sectionid).first()[0]
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('admin/students.html', students=students, pages=pages, curr_page=page)
 
@@ -891,7 +891,7 @@ def teams(page):
 
     stuid = session['id']
     student = Students.query.filter_by(id=stuid).first()
-    count = Teams.query.filter_by().count()
+    count = Teams.query.filter_by(sectionNumber=student.sectionid).count()
     teams = Teams.query.filter_by(sectionNumber=student.sectionid).slice(page_start, page_end).all()
 
     pages = int(count / results_per_page) + (count % results_per_page > 0)
