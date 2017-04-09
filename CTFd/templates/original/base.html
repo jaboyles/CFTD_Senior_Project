@@ -51,7 +51,9 @@
             </li>
             <li><a href="{{ request.script_root }}/admin">Admin</a></li>
             {% endif %}
-            <li><a href="{{ request.script_root }}/student/{{ id }}">Student</a></li>
+            {% if not admin %}
+              <li><a href="{{ request.script_root }}/student/{{ id }}">Student</a></li>
+            {% endif %}
             <li><a href="{{ request.script_root }}/profile">Profile</a></li>
             <li><a href="{{ request.script_root }}/logout">Logout</a></li>
           {% else %}
