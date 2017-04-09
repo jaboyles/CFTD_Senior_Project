@@ -77,11 +77,11 @@
 
     <h1 id="student-id">{{ student.name }}</h1>
     <h2 id="student-email" class="text-center">{{ student.email }}</h2>
-    <h2 id="student-place" class="text-center">
+    <!--<h2 id="student-place" class="text-center">
         {%if place %}
             {{ place }} <small>place</small>
         {% endif %}
-    </h2>
+    </h2>-->
     <h2 id="student-score" class="text-center">
         {%if score %}
             {{ score }} <small>points</small>
@@ -92,24 +92,6 @@
     <div id="keys-pie-graph"></div>
     <div id="categories-pie-graph"></div>
     <div id="score-graph"></div>
-
-    <table class="table table-striped">
-        <h3>IP Addresses</h3>
-        <thead>
-        <tr>
-            <td class="text-center"><b>IP Address</b></td>
-            <td class="text-center"><b>Last Seen</b></td>
-        </tr>
-        </thead>
-        <tbody>
-        {% for addr in addrs %}
-            <tr>
-                <td class="text-center">{{ addr[0]|long2ip }}</td>
-                <td class="text-center solve-time"><script>document.write( moment({{ addr[1]|unix_time_millis }}).local().format('MMMM Do, h:mm:ss A'))</script></td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
 
 
     <table class="table table-striped">
