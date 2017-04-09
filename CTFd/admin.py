@@ -922,10 +922,11 @@ def admin_team(teamid):
 
 @admin.route('/admin/team/new', methods=['POST'])
 def admin_create_team():
-    team = Teams(request.form['name'], request.form['sectionid'])
+    admin = Students.query.filter_by(id=session['id']).first()
+    team = Teams(request.form['name'], admin.sectionid)
     db.session.add(team)
     db.session.commit()
-    db.sesstion.close()
+    db.session.close()
     return redirect(url_for('admin.admin_teams'))
 
 

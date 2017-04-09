@@ -59,7 +59,7 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="text-center">Edit User</h2>
+                    <h2 class="text-center">Edit Team</h2>
                 </div>
                 <div class="modal-body" style="padding:20px; height:525px;">
                     <form method="POST" action="{{ request.script_root }}/admin/teams/">
@@ -72,6 +72,26 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                         <div id="results">
                         </div>
                         <button id="update-user" type="submit" class="btn btn-theme btn-outlined pull-right">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="new-user" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="text-center">New Team</h2>
+                </div>
+                <div class="modal-body" style="padding:20px; height:525px;">
+                    <form method="POST" action="{{ request.script_root }}/admin/team/new">
+                        <input type="hidden" name="nonce" value="{{ nonce }}">
+                        <input type="hidden" name="id">
+                        <div class="form-group">
+                            <label for="name">Team Name</label>
+                            <input type="text" class="form-control" name="name" id="team-name" placeholder="Enter team name" required>
+                        </div>
+                        <button id="create-user" type="submit" class="btn btn-theme btn-outlined pull-right">Create</button>
                     </form>
                 </div>
             </div>
@@ -104,6 +124,9 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             {% endfor %}
         </tbody>
     </table>
+    <button id="add-team" type="button" class="text-center btn btn-theme btn-outlined">
+        + New Team
+    </button>
     {% if pages > 1 %}
     <div class="text-center">Page
         <br>
@@ -134,6 +157,10 @@ function load_update_modal(id, name, email, website, affiliation, country){
     modal_form.find('input[name=country]').val(country)
     $('#user form').attr('action', '{{ request.script_root }}/admin/team/'+id)
     $('#user').modal("show");
+}
+
+function load_new_modal(id, name, email, website, affiliation, country){
+
 }
 
 $('#update-user').click(function(e){
@@ -221,6 +248,11 @@ $('.fa-pencil-square-o').click(function(){
     var country = elem.find('.team-country').text().trim();
 
     load_update_modal(id, name, email, website, affiliation, country);
+});
+
+
+$('#add-team').click(function(){
+    $('#new-user').modal("show");
 });
 
 function load_confirm_modal(id, name){
