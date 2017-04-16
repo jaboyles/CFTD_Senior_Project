@@ -56,7 +56,8 @@
                 </div>
                 <div role="tabpanel" class="tab-pane" id="add-section">
                     <form method="POST" action="{{ request.script_root }}/admin/section/new" enctype="multipart/form-data">
-                        <input type="file" name="upload" />
+                        <label for="upload">Tab-delimited xls file containing student data for a section:</label>
+                        <input id="upload" type="file" name="upload" />
                         <br/>
                         <input type="submit" class="text-center btn btn-theme btn-outlined"/>
                     </form>
