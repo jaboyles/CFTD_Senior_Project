@@ -11,6 +11,9 @@
                     <a href="#appearance-section" aria-controls="appearance-section" role="tab" data-toggle="tab">Appearance</a>
                 </li>
                 <li role="presentation">
+                    <a href="#add-section" aria-controls="add-section" role="tab" data-toggle="tab">Add Section</a>
+                </li>
+                <li role="presentation">
                     <a href="#accounts-section" aria-controls="accounts-section" role="tab" data-toggle="tab">Accounts</a>
                 </li>
                 <li role="presentation">
@@ -50,6 +53,13 @@
                             {% endfor %}
                         </select>
                     </div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="add-section">
+                    <form method="POST" action="{{ request.script_root }}/admin/section/new" enctype="multipart/form-data">
+                        <input type="file" name="upload" />
+                        <br/>
+                        <input type="submit" class="text-center btn btn-theme btn-outlined"/>
+                    </form>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="accounts-section">
                     <div class="form-group">
