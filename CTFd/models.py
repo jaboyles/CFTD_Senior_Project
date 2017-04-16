@@ -236,6 +236,13 @@ class Students(db.Model):
         except ValueError:
             return 0
 
+    def teamname(self):
+        team = db.session.query(Teams).filter(Teams.id == self.teamid).first()
+        if team:
+            return team.name
+        else:
+            return '0'
+
 
 class Solves(db.Model):
     __table_args__ = (db.UniqueConstraint('chalid', 'studentid'), {})

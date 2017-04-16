@@ -93,6 +93,8 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                 </td>
                 <td class="text-center"><b>Student</b>
                 </td>
+                <td class="text-center"><b>Team</b>
+                </td>
                 <td class="text-center"><b>Email</b>
                 </td>
                 <td class="text-center"><b>Admin</b>
@@ -108,6 +110,8 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             <tr name="{{ student.id }}">
                 <td class="student-id">{{ student.id }}</td>
                 <td class="student-name"><a href="{{ request.script_root }}/admin/student/{{ student.id }}">{{ student.name | truncate(32) }}</a>
+                </td>
+                <td class="student-name"><a href="{{ request.script_root }}/admin/team/{{ student.teamid }}">{{ student.teamname() | truncate(32) }}</a>
                 </td>
                 <td class="student-email">{{ student.email | truncate(32) }}</td>
                 <td class="student-admin">
