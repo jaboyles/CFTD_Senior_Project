@@ -243,6 +243,7 @@ def file_handler(path):
                     abort(403)
     return send_file(os.path.join(app.root_path, 'uploads', f.location))
 
+
 @views.route('/teams', defaults={'page': '1'})
 @views.route('/teams/<int:page>')
 def teams(page):
@@ -262,6 +263,7 @@ def teams(page):
 
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('teams.html', teams=teams, team_pages=pages, curr_page=page)
+
 
 @views.route('/team/<int:teamid>')
 def team(teamid):
@@ -283,17 +285,20 @@ def team(teamid):
     elif request.method == 'POST':
         return None # return solves data by team id
 
+
 @views.route('/team/<int:teamid>/challenges')
 def teamChallenges(teamid):
     team = Teams.query.filter_by(id=teamid).first()
     challenges = team.challenges()
     return render_template('tChallenges.html', team=team, challenges=challenges)
 
+
 @views.route('/team/<int:teamid>/solves')
 def teamSolves(teamid):
     team = Teams.query.filter_by(id=teamid).first()
     solves = team.solves()
     return render_template('tSolves.html', team=team, solves=solves)
+
 
 @views.route('/test')
 def test():

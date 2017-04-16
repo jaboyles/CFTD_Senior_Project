@@ -491,6 +491,7 @@ def admin_student(studentid):
             return jsonify({'data': ['success']})
 
         name = request.form.get('name', None)
+        team = request.form.get('team', None)
         password = request.form.get('password', None)
         email = request.form.get('email', None)
         website = request.form.get('website', None)
@@ -513,6 +514,7 @@ def admin_student(studentid):
         else:
             user.name = name
             user.email = email
+            user.teamid = team
             if password:
                 user.password = bcrypt_sha256.encrypt(password)
             user.website = website
@@ -942,3 +944,7 @@ def teamSolves(teamid):
     team = Teams.query.filter_by(id=teamid).first()
     solves = team.solves()
     return render_template('tSolves.html', team=team, solves=solves)
+
+@admin.route('/admin/new_section')
+def new_section():
+    return render_template('admin/new_section.html')
