@@ -70,6 +70,10 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                             <input type="text" class="form-control" name="name" id="name" placeholder="Enter new student name" required>
                         </div>
                         <div class="form-group">
+                            <label for="name">Team ID</label>
+                            <input type="text" class="form-control" name="team" id="team" placeholder="Enter new team id" required>
+                        </div>
+                        <div class="form-group">
                             <label for="email">Email</label>
                             <input type="email" class="form-control" name="email" id="email" placeholder="Enter new email" required>
                         </div>
@@ -111,7 +115,7 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                 <td class="student-id">{{ student.id }}</td>
                 <td class="student-name"><a href="{{ request.script_root }}/admin/student/{{ student.id }}">{{ student.name | truncate(32) }}</a>
                 </td>
-                <td class="student-name"><a href="{{ request.script_root }}/admin/team/{{ student.teamid }}">{{ student.teamname() | truncate(32) }}</a>
+                <td class="student-team"><a href="{{ request.script_root }}/admin/team/{{ student.teamid }}">{{ student.teamname() | truncate(32) }}</a>
                 </td>
                 <td class="student-email">{{ student.email | truncate(32) }}</td>
                 <td class="student-admin">
@@ -153,10 +157,11 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
 
 {% block scripts %}
 <script>
-function load_update_modal(id, name, email, website, affiliation, country){
+function load_update_modal(id, name, team, email, website, affiliation, country){
     var modal_form = $('#user form');
 
     modal_form.find('input[name=name]').val(name)
+    modal_form.find('input[name=team]').val(team)
     modal_form.find('input[name=id]').val(id)
     modal_form.find('input[name=email]').val(email)
     modal_form.find('input[name=website]').val(website)
@@ -245,12 +250,14 @@ $('.fa-pencil-square-o').click(function(){
     var elem = $(this).parent().parent().parent();
     var id = elem.find('.student-id').text().trim();
     var name = elem.find('.student-name').text().trim();
+    var href = elem.find('.student-team a').attr('href');
+    var team = href.slice(href.lastIndexOf('/') + 1).trim();
     var email = elem.find('.student-email').text().trim();
     var website = elem.find('.student-website').text().trim();
     var affiliation = elem.find('.student-affiliation').text().trim();
     var country = elem.find('.student-country').text().trim();
 
-    load_update_modal(id, name, email, website, affiliation, country);
+    load_update_modal(id, name, team, email, website, affiliation, country);
 });
 
 function load_confirm_modal(id, name){

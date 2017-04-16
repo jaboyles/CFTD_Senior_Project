@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="row">
+    <br>
+    <h1>New Section</h1>
+    <form method="POST" action="{{ request.script_root }}/admin/section/new" enctype="multipart/form-data">
+        <label for="upload">Tab-delimited xls file containing student data for a section:</label>
+        <input id="upload" type="file" name="upload" />
+        <br/>
+        <input type="submit" class="text-center btn btn-theme btn-outlined"/>
+    </form>
+</div>
+{% endblock %}
