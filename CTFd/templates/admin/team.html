@@ -108,7 +108,7 @@
         <tbody>
         {% for chal in challenges %}
             <tr class="chal-solve">
-                    <td><span><a href="{{ request.script_root }}/admin/team/{{team.id}}/challenge/{{ chal.id }}">{{ chal.name }}</span></td>
+                <td><span><a href="{{ request.script_root }}/admin/team/{{team.id}}/challenge/{{ chal.id }}">{{ chal.name }}</a></span></td>
                     <td><span>{{ chal.category }}</span></td>
                     <td><span>{{ chal.value }}</span></td>
                     <td><span>{{ chal.num_students_solve(team.id) }}</span></td>
@@ -132,7 +132,7 @@
         <tbody>
         {% for stu in students %}
             <tr class="chal-wrong">
-                <td class="text-center stu" id="{{ stu.id }}"><a href="{{ request.script_root }}/admin/student/{{ stu.id }}">{{ stu.name }}</td>
+                <td class="text-center stu" id="{{ stu.id }}"><a href="{{ request.script_root }}/admin/student/{{ stu.id }}">{{ stu.name }}</a></td>
             </tr>
         {% endfor %}
         </tbody>
