@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 from flask import current_app as app, render_template, request, redirect, abort, jsonify, url_for, session, Blueprint, Response, send_file
 from jinja2.exceptions import TemplateNotFound
@@ -149,6 +150,25 @@ def student(studentid):
         for x in solves:
             json['solves'].append({'id': x.id, 'chal': x.chalid, 'student': x.studentid})
         return jsonify(json)
+
+@views.route('/getStudent/<int:studentid>', methods=['GET'])
+def getStudent(studentid):
+    student = Students.query.filter_by(studentid=studentid).first()
+    json_data = {
+        'id' : student.id,
+        'name' : student.name,
+        'email' : student.email,
+        'teamid' : student.teamid,
+        'password' : student.password,
+        'bracket' : student.bracket,
+        'banned' : student.banned,
+        'verified' : student.verified,
+        'admin' : student.admin,
+        'joined' : student.joined,
+        'sectionid' : student.sectionid
+    }
+    db.session.close()
+    return jsonify(json_data)
 
 
 @views.route('/profile', methods=['POST', 'GET'])
