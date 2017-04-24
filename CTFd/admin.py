@@ -47,7 +47,6 @@ def get_section():
 @admin.route('/admin/section/new', methods=['POST', 'GET'])
 @admins_only
 def new_section_from_file():
-    print("Got here")
     if request.method == 'GET':
         return render_template('admin/new_section.html')
     if request.method == 'POST':
