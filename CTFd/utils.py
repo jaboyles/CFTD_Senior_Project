@@ -16,6 +16,8 @@ import sys
 import tempfile
 import time
 import urllib
+import string
+import xlrd
 
 from flask import current_app as app, request, redirect, url_for, session, render_template, abort
 from flask_caching import Cache
@@ -592,3 +594,12 @@ def create_section_students_from_file(file):
         os.makedirs(os.path.join(os.path.normpath(app.root_path), 'uploads'))
 
     file.save(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+
+    xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+
+    lines = xlsFile.readlines()
+
+    
+    #print(lines)
+    for line in lines:
+        print(line)
