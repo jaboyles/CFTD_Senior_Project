@@ -580,3 +580,15 @@ def container_ports(name, verbose=False):
             return ports
     except subprocess.CalledProcessError:
         return []
+
+
+def create_section_students_from_file(file):
+    filename = secure_filename(file.filename)
+
+    if len(filename) <= 0:
+        return False
+
+    if not os.path.exists(os.path.join(os.path.normpath(app.root_path), 'uploads')):
+        os.makedirs(os.path.join(os.path.normpath(app.root_path), 'uploads'))
+
+    file.save(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))

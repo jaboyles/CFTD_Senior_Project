@@ -3,13 +3,15 @@ import json
 import os
 
 from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint, session
+from flask import flash
 from passlib.hash import bcrypt_sha256
 from sqlalchemy.sql import not_
 
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
-    container_stop, container_start, get_themes, cache, upload_file, authed
-from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, Pages, Config, DatabaseError, \
+    container_stop, container_start, get_themes, cache, upload_file, authed, create_section_students_from_file
+from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, \
+    Pages, Config, DatabaseError, \
     Sections, Teams
 from CTFd.scoreboard import get_standings
 
@@ -40,6 +42,33 @@ def get_section():
     user = Students.query.filter_by(admin=True).first()
     sectionid = user.sectionid
     return str(sectionid)
+
+
+@admin.route('/admin/section/new', methods=['POST'])
+@admins_only
+def new_section_from_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file:
+            create_section_students_from_file(file)
+    return '''
+        <!doctype html>
+        <title>Upload new File</title>
+        <h1>Upload new File</h1>
+        <form method=post enctype=multipart/form-data>
+          <p><input type=file name=file>
+             <input type=submit value=Upload>
+        </form>
+        '''
 
 
 @admin.route('/admin/sections', methods=['GET'])
@@ -313,7 +342,8 @@ def new_container():
 @admins_only
 def admin_chals():
     if request.method == 'POST':
-        chals = Challenges.query.add_columns('id', 'name', 'value', 'description', 'category', 'hidden').order_by(Challenges.value).all()
+        chals = Challenges.query.add_columns('id', 'name', 'value', 'description', 'category', 'hidden').order_by(
+            Challenges.value).all()
 
         students_with_points = db.session.query(Solves.studentid).join(Students).filter(
             Students.banned == False).group_by(Solves.studentid).count()
@@ -413,7 +443,8 @@ def admin_files(chalid):
     if request.method == 'POST':
         if request.form['method'] == "delete":
             f = Files.query.filter_by(id=request.form['file']).first_or_404()
-            if os.path.exists(os.path.join(app.root_path, 'uploads', f.location)): # Some kind of os.path.isfile issue on Windows...
+            if os.path.exists(os.path.join(app.root_path, 'uploads',
+                                           f.location)):  # Some kind of os.path.isfile issue on Windows...
                 os.unlink(os.path.join(app.root_path, 'uploads', f.location))
             db.session.delete(f)
             db.session.commit()
@@ -441,7 +472,8 @@ def admin_students(page):
 
     admin = Students.query.filter_by(id=session['id']).first()
 
-    students = Students.query.filter_by(sectionid=admin.sectionid).order_by(Students.id.asc()).slice(page_start, page_end).all()
+    students = Students.query.filter_by(sectionid=admin.sectionid).order_by(Students.id.asc()).slice(page_start,
+                                                                                                     page_end).all()
     count = db.session.query(db.func.count(Students.id)).filter_by(sectionid=admin.sectionid).first()[0]
     pages = int(count / results_per_page) + (count % results_per_page > 0)
     return render_template('admin/students.html', students=students, pages=pages, curr_page=page)
@@ -462,14 +494,15 @@ def admin_student(studentid):
         missing = Challenges.query.filter(not_(Challenges.id.in_(solve_ids))).all()
         last_seen = db.func.max(Tracking.date).label('last_seen')
         addrs = db.session.query(Tracking.ip, last_seen) \
-                          .filter_by(student=studentid) \
-                          .group_by(Tracking.ip) \
-                          .order_by(last_seen.desc()).all()
+            .filter_by(student=studentid) \
+            .group_by(Tracking.ip) \
+            .order_by(last_seen.desc()).all()
         wrong_keys = WrongKeys.query.filter_by(studentid=studentid).order_by(WrongKeys.date.asc()).all()
         awards = Awards.query.filter_by(studentid=studentid).order_by(Awards.date.asc()).all()
         score = user.score()
         place = user.place()
-        return render_template('admin/student.html', solves=solves, student=user, addrs=addrs, score=score, missing=missing,
+        return render_template('admin/student.html', solves=solves, student=user, addrs=addrs, score=score,
+                               missing=missing,
                                place=place, wrong_keys=wrong_keys, awards=awards)
     elif request.method == 'POST':
         admin_user = request.form.get('admin', None)
@@ -491,7 +524,6 @@ def admin_student(studentid):
             return jsonify({'data': ['success']})
 
         name = request.form.get('name', None)
-        team = request.form.get('team', None)
         password = request.form.get('password', None)
         email = request.form.get('email', None)
         website = request.form.get('website', None)
@@ -514,7 +546,6 @@ def admin_student(studentid):
         else:
             user.name = name
             user.email = email
-            user.teamid = team
             if password:
                 user.password = bcrypt_sha256.encrypt(password)
             user.website = website
@@ -576,17 +607,18 @@ def delete_student(studentid):
 @admins_only
 def admin_graph(graph_type):
     if graph_type == 'categories':
-        categories = db.session.query(Challenges.category, db.func.count(Challenges.category)).group_by(Challenges.category).all()
+        categories = db.session.query(Challenges.category, db.func.count(Challenges.category)).group_by(
+            Challenges.category).all()
         json_data = {'categories': []}
         for category, count in categories:
             json_data['categories'].append({'category': category, 'count': count})
         return jsonify(json_data)
     elif graph_type == "solves":
         solves_sub = db.session.query(Solves.chalid, db.func.count(Solves.chalid).label('solves_cnt')) \
-                               .join(Students, Solves.studentid == Students.id).filter(Students.banned == False) \
-                               .group_by(Solves.chalid).subquery()
+            .join(Students, Solves.studentid == Students.id).filter(Students.banned == False) \
+            .group_by(Solves.chalid).subquery()
         solves = db.session.query(solves_sub.columns.chalid, solves_sub.columns.solves_cnt, Challenges.name) \
-                           .join(Challenges, solves_sub.columns.chalid == Challenges.id).all()
+            .join(Challenges, solves_sub.columns.chalid == Challenges.id).all()
         json_data = {}
         for chal, count, name in solves:
             json_data[name] = count
@@ -654,7 +686,8 @@ def delete_award(award_id):
 def admin_scores():
     score = db.func.sum(Challenges.value).label('score')
     quickest = db.func.max(Solves.date).label('quickest')
-    students = db.session.query(Solves.studentid, Students.name, score).join(Students).join(Challenges).filter(Students.banned == False).group_by(Solves.studentid).order_by(score.desc(), quickest)
+    students = db.session.query(Solves.studentid, Students.name, score).join(Students).join(Challenges).filter(
+        Students.banned == False).group_by(Solves.studentid).order_by(score.desc(), quickest)
     db.session.close()
     json_data = {'students': []}
     for i, x in enumerate(students):
@@ -734,10 +767,10 @@ def admin_stats():
     challenge_count = db.session.query(db.func.count(Challenges.id)).first()[0]
 
     solves_sub = db.session.query(Solves.chalid, db.func.count(Solves.chalid).label('solves_cnt')) \
-                           .join(Students, Solves.studentid == Students.id).filter(Students.banned == False) \
-                           .group_by(Solves.chalid).subquery()
+        .join(Students, Solves.studentid == Students.id).filter(Students.banned == False) \
+        .group_by(Solves.chalid).subquery()
     solves = db.session.query(solves_sub.columns.chalid, solves_sub.columns.solves_cnt, Challenges.name) \
-                       .join(Challenges, solves_sub.columns.chalid == Challenges.id).all()
+        .join(Challenges, solves_sub.columns.chalid == Challenges.id).all()
     solve_data = {}
     for chal, count, name in solves:
         solve_data[name] = count
@@ -770,13 +803,14 @@ def admin_wrong_key(page):
     page_start = results_per_page * (page - 1)
     page_end = results_per_page * (page - 1) + results_per_page
 
-    wrong_keys = WrongKeys.query.add_columns(WrongKeys.id, WrongKeys.chalid, WrongKeys.flag, WrongKeys.studentid, WrongKeys.date,
+    wrong_keys = WrongKeys.query.add_columns(WrongKeys.id, WrongKeys.chalid, WrongKeys.flag, WrongKeys.studentid,
+                                             WrongKeys.date,
                                              Challenges.name.label('chal_name'), Students.name.label('student_name')) \
-                                .join(Challenges) \
-                                .join(Students) \
-                                .order_by(WrongKeys.date.desc()) \
-                                .slice(page_start, page_end) \
-                                .all()
+        .join(Challenges) \
+        .join(Students) \
+        .order_by(WrongKeys.date.desc()) \
+        .slice(page_start, page_end) \
+        .all()
 
     wrong_count = db.session.query(db.func.count(WrongKeys.id)).first()[0]
     pages = int(wrong_count / results_per_page) + (wrong_count % results_per_page > 0)
@@ -795,11 +829,11 @@ def admin_correct_key(page):
 
     solves = Solves.query.add_columns(Solves.id, Solves.chalid, Solves.studentid, Solves.date, Solves.flag,
                                       Challenges.name.label('chal_name'), Students.name.label('student_name')) \
-                         .join(Challenges) \
-                         .join(Students) \
-                         .order_by(Solves.date.desc()) \
-                         .slice(page_start, page_end) \
-                         .all()
+        .join(Challenges) \
+        .join(Students) \
+        .order_by(Solves.date.desc()) \
+        .slice(page_start, page_end) \
+        .all()
 
     solve_count = db.session.query(db.func.count(Solves.id)).first()[0]
     pages = int(solve_count / results_per_page) + (solve_count % results_per_page > 0)
@@ -812,7 +846,8 @@ def admin_correct_key(page):
 @admins_only
 def admin_fails(studentid):
     if studentid == "all":
-        fails = WrongKeys.query.join(Students, WrongKeys.studentid == Students.id).filter(Students.banned == False).count()
+        fails = WrongKeys.query.join(Students, WrongKeys.studentid == Students.id).filter(
+            Students.banned == False).count()
         solves = Solves.query.join(Students, Solves.studentid == Students.id).filter(Students.banned == False).count()
         db.session.close()
         json_data = {'fails': str(fails), 'solves': str(solves)}
@@ -831,10 +866,11 @@ def admin_create_chal():
     files = request.files.getlist('files[]')
 
     # TODO: Expand to support multiple flags
-    flags = [{'flag': request.form['key'], 'type':int(request.form['key_type[0]'])}]
+    flags = [{'flag': request.form['key'], 'type': int(request.form['key_type[0]'])}]
 
     # Create challenge
-    chal = Challenges(request.form['name'], request.form['desc'], request.form['value'], request.form['category'], flags)
+    chal = Challenges(request.form['name'], request.form['desc'], request.form['value'], request.form['category'],
+                      flags)
     if 'hidden' in request.form:
         chal.hidden = True
     else:
@@ -919,7 +955,7 @@ def admin_team(teamid):
     if request.method == 'GET':
         return render_template('admin/team.html', team=team, students=students, challenges=challenges)
     elif request.method == 'POST':
-        return None # return solves data by team id
+        return None  # return solves data by team id
 
 
 @admin.route('/admin/team/new', methods=['POST'])
@@ -944,6 +980,7 @@ def teamSolves(teamid):
     team = Teams.query.filter_by(id=teamid).first()
     solves = team.solves()
     return render_template('tSolves.html', team=team, solves=solves)
+
 
 @admin.route('/admin/new_section')
 def new_section():
