@@ -17,7 +17,6 @@ import tempfile
 import time
 import urllib
 import string
-import xlrd
 
 from flask import current_app as app, request, redirect, url_for, session, render_template, abort
 from flask_caching import Cache
@@ -578,7 +577,7 @@ def container_ports(name, verbose=False):
             ports = info[0]['Config']['ExposedPorts'].keys()
             if not ports:
                 return []
-            ports = [int(re.sub('[A-Za-z/]+', '', port)) for port in ports_asked]
+            ports = [int(re.sub('[A-Za-z/]+', '', port)) for port in ports]
             return ports
     except subprocess.CalledProcessError:
         return []
@@ -597,9 +596,7 @@ def create_section_students_from_file(file):
 
     xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
 
-    lines = xlsFile.readlines()
-
-    
-    #print(lines)
-    for line in lines:
-        print(line)
+    lines = xlsFile.read()
+    xlsFile.close()
+    print(lines[0:200])
+    print(len(lines))
