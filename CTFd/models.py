@@ -78,7 +78,6 @@ class Challenges(db.Model):
         return '<chal %r>' % self.name
 
     def num_students_solve(self, teamid):
-        print(teamid)
         count = db.session.query(Students).join(Solves).join(Challenges).filter(self.id == Solves.chalid,
                                                                                    Students.id == Solves.studentid,
                                                                                    Students.teamid == teamid).count()

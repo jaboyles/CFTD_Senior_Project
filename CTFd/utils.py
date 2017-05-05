@@ -634,7 +634,7 @@ def create_section_students_from_file(file):
         team_id = team_ids[random.randrange(1, len(team_ids))]
         print("team id:")
         print(team_id)
-        student = Students(students[index]["name"], students[index]["email"], "password", section_number, team_id)
+        student = Students(students[index]["name"], students[index]["email"], "password", team_id, section_number)
         db.session.add(student)
         student.verified = True
 

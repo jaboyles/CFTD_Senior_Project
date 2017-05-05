@@ -63,5 +63,8 @@
 {% endblock %}
 
 {% block scripts %}
+    <script type="text/javascript">
+        admin = false;
+    </script>
     <script src="{{ request.script_root }}/static/{{ ctf_theme() }}/js/style.js"></script>
 {% endblock %}
