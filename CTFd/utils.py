@@ -595,8 +595,90 @@ def create_section_students_from_file(file):
     file.save(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
 
     xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
-
-    lines = xlsFile.read()
+    section = get_section_from_file(filename)
+    print("Section: " + section)
+    students = get_students_from_file(filename)
+    for index in range(len(students)):
+        print("Student " + students[index]['id'] + ":")
+        print(students[index])
+    lines = xlsFile.readlines()
     xlsFile.close()
-    print(lines[0:200])
-    print(len(lines))
+    #print(lines)
+
+
+def get_section_from_file(filename):
+    xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+    text = xlsFile.read()
+    xlsFile.close()
+    indexOfClass = text.find("CPE")
+
+    section = text[indexOfClass + len("CPE XXX-") : indexOfClass + len("CPE XXX-XX")]
+
+    return section
+
+
+def get_students_from_file(filename):
+    xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+    text = xlsFile.read()
+    xlsFile.close()
+    indexOfHeaderRow = text.find("No.")
+    text = text[indexOfHeaderRow:]
+    indexOfStudent = text.find("\r")
+    indexOfLastLine = text.find("Class level")
+    text = text[indexOfStudent + 1: indexOfLastLine - 1]
+    students = list()
+    while len(text) > 0:
+        student = {}
+
+        # Get the student's number
+        indexOfTab = text.find("\t")
+        student['id'] = text[0: indexOfTab]
+        if len(student['id']) == 0:
+            break
+        text = text[indexOfTab + 1:]
+
+        # Get the student's name
+        indexOfTab = text.find("\t")
+        name = text[1: indexOfTab - 1]
+        indexOfComma = text.find(",")
+        student['name'] = name[indexOfComma + 1: len(name)] + " " + name[0: indexOfComma - 1]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's email
+        indexOfTab = text.find("\t")
+        student['email'] = text[0: indexOfTab] + "@calpoly.edu"
+        text = text[indexOfTab + 1:]
+
+        # Get the student's emplid
+        indexOfTab = text.find("\t")
+        student['emplid'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's major
+        indexOfTab = text.find("\t")
+        student['major'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's class level
+        indexOfTab = text.find("\t")
+        student['class'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's units
+        indexOfTab = text.find("\t")
+        student['units'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's status
+        indexOfTab = text.find("\t")
+        student['status'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's FERPA status
+        indexOfTab = text.find("\t")
+        student['ferpa'] = text[0: indexOfTab]
+        text = text[indexOfTab + 2:]
+
+        students.append(student)
+
+    return students
