@@ -62,15 +62,7 @@ def new_section_from_file():
             return redirect(request.url)
         if file:
             create_section_students_from_file(file)
-    return '''
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Upload new File</h1>
-        <form method=post enctype=multipart/form-data>
-          <p><input type=file name=file>
-             <input type=submit value=Upload>
-        </form>
-        '''
+    return render_template("admin/success.html")
 
 
 @admin.route('/admin/sections', methods=['GET'])
