@@ -16,6 +16,8 @@ import sys
 import tempfile
 import time
 import urllib
+import random
+import string
 
 from flask import current_app as app, request, redirect, url_for, session, render_template, abort
 from flask_caching import Cache
@@ -25,7 +27,8 @@ import six
 from six.moves.urllib.parse import urlparse, urljoin
 from werkzeug.utils import secure_filename
 
-from CTFd.models import db, WrongKeys, Pages, Config, Tracking, Students, Files, Containers, ip2long, long2ip
+from CTFd.models import db, WrongKeys, Pages, Config, Tracking, Students, Files, Containers, ip2long, long2ip, Teams, \
+    Sections
 
 cache = Cache()
 migrate = Migrate()
@@ -576,7 +579,143 @@ def container_ports(name, verbose=False):
             ports = info[0]['Config']['ExposedPorts'].keys()
             if not ports:
                 return []
-            ports = [int(re.sub('[A-Za-z/]+', '', port)) for port in ports_asked]
+            ports = [int(re.sub('[A-Za-z/]+', '', port)) for port in ports]
             return ports
     except subprocess.CalledProcessError:
         return []
+
+
+def create_section_students_from_file(file):
+    filename = secure_filename(file.filename)
+
+    if len(filename) <= 0:
+        return False
+
+    if not os.path.exists(os.path.join(os.path.normpath(app.root_path), 'uploads')):
+        os.makedirs(os.path.join(os.path.normpath(app.root_path), 'uploads'))
+
+    file.save(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+
+    class_info = get_class_info_from_file(filename)
+    section_number = int(class_info["section"])
+    class_name = int(class_info["class"])
+
+    section = Sections(section_number, class_name)
+    db.session.add(section)
+
+    print("Section: " + str(section_number))
+
+    print("Class name: " + str(class_name))
+    # Generate teams for section
+    team_count = Teams.query.filter_by().count()
+    NUMBER_TEAMS = 5
+    team_names = list()
+    # Generate team names
+    for index in range(NUMBER_TEAMS):
+        team_names.append("Team " + str(team_count + 1 + index))
+
+    for index in range(len(team_names)):
+        team = Teams(team_names[index], section_number)
+        db.session.add(team)
+
+    db.session.commit()
+
+    # Get list of teams for students to be assigned to
+    teams = Teams.query.filter_by(sectionNumber=section_number).all()
+    team_ids = list()
+    for index in range(len(teams)):
+        team_ids.append(teams[index].id)
+
+    # Generate students
+    students = get_students_from_file(filename)
+    for index in range(len(students)):
+        print("Student " + students[index]['id'] + ":")
+        print(students[index])
+        team_id = team_ids[random.randrange(1, len(team_ids))]
+        print("team id:")
+        print(team_id)
+        student = Students(students[index]["name"], students[index]["email"], "password", team_id, section_number)
+        db.session.add(student)
+        student.verified = True
+
+    db.session.commit()
+
+
+def get_class_info_from_file(filename):
+    info = {}
+    xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+    text = xlsFile.read()
+    xlsFile.close()
+    indexOfClass = text.find("CPE")
+
+    info["class"] = text[indexOfClass + len("CPE "): indexOfClass + len("CPE XXX")]
+    info["section"] = text[indexOfClass + len("CPE XXX-") : indexOfClass + len("CPE XXX-XX")]
+
+    return info
+
+
+def get_students_from_file(filename):
+    xlsFile = open(os.path.join(os.path.normpath(app.root_path), 'uploads', filename))
+    text = xlsFile.read()
+    xlsFile.close()
+    indexOfHeaderRow = text.find("No.")
+    text = text[indexOfHeaderRow:]
+    indexOfStudent = text.find("\r")
+    indexOfLastLine = text.find("Class level")
+    text = text[indexOfStudent + 1: indexOfLastLine - 1]
+    students = list()
+    while len(text) > 0:
+        student = {}
+
+        # Get the student's number
+        indexOfTab = text.find("\t")
+        student['id'] = text[0: indexOfTab]
+        if len(student['id']) == 0:
+            break
+        text = text[indexOfTab + 1:]
+
+        # Get the student's name
+        indexOfTab = text.find("\t")
+        name = text[1: indexOfTab - 1]
+        indexOfComma = text.find(",")
+        student['name'] = name[indexOfComma + 1: len(name)] + " " + name[0: indexOfComma - 1]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's email
+        indexOfTab = text.find("\t")
+        student['email'] = text[0: indexOfTab] + "@calpoly.edu"
+        text = text[indexOfTab + 1:]
+
+        # Get the student's emplid
+        indexOfTab = text.find("\t")
+        student['emplid'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's major
+        indexOfTab = text.find("\t")
+        student['major'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's class level
+        indexOfTab = text.find("\t")
+        student['class'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's units
+        indexOfTab = text.find("\t")
+        student['units'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's status
+        indexOfTab = text.find("\t")
+        student['status'] = text[0: indexOfTab]
+        text = text[indexOfTab + 1:]
+
+        # Get the student's FERPA status
+        indexOfTab = text.find("\t")
+        student['ferpa'] = text[0: indexOfTab]
+        text = text[indexOfTab + 2:]
+
+        students.append(student)
+
+    return students

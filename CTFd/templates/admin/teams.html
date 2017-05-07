@@ -104,6 +104,8 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
                 </td>
                 <td class="text-center"><b>Team</b>
                 </td>
+                <td class="text-center"><b>Size</b>
+                </td>
                 <td class="text-center"><b>Settings</b>
                 </td>
             </tr>
@@ -112,7 +114,8 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             {% for team in teams %}
             <tr name="{{ team.id }}">
                 <td class="team-id">{{ team.id }}</td>
-                <td class="team-name"><a href="{{ request.script_root }}/admin/team/{{ team.id }}">{{ team.name | truncate(32) }}</a>
+                <td class="team-name"><a href="{{ request.script_root }}/admin/team/{{ team.id }}">{{ team.name | truncate(32) }}</a></td>
+                <td class="team-size"><a href="{{ request.script_root }}/admin/team/{{ team.id }}">{{ team.num_students() }}</a>
                 </td>
                 <td class="text-center"><span>
                     <i class="fa fa-pencil-square-o"></i>

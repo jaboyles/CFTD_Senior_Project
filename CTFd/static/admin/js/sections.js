@@ -27,7 +27,8 @@ function getSection() {
         method: "GET",
         url: script_root + '/admin/section',
         success: function(section) {
-            console.log("You're in section " + section);
+            //console.log("You're in section " + section);
+            $("#section-label").html("Section " + section + " <span class='caret'></span>");
         },
         error: function() {
             console.log("Section get failed");
@@ -55,4 +56,5 @@ function getSections() {
 
 $(document).ready(function() {
     getSections();
+    getSection();
 })
