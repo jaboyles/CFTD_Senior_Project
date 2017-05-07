@@ -201,6 +201,7 @@ def loginAndroid():
             session['id'] = student.id
             session['admin'] = student.admin
             session['nonce'] = sha512(os.urandom(10))
+            session.modified = True
             db.session.close()
 
             logger = logging.getLogger('logins')
