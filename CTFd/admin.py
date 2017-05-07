@@ -623,7 +623,7 @@ def admin_graph(graph_type):
 @admins_only
 def admin_scoreboard():
     standings = get_standings(admin=True)
-    return render_template('admin/scoreboard.html', students=standings)
+    return render_template('admin/scoreboard.html', teams=standings)
 
 
 @admin.route('/admin/students/<int:studentid>/awards', methods=['GET'])
