@@ -480,7 +480,7 @@ def admin_student(studentid):
     admin = Students.query.filter_by(id=session['id']).first()
 
     if admin.sectionid != user.sectionid:
-        return render_template('errors/403.html')
+        return render_template('admin/wrong_section.html', section=user.sectionid)
 
     if request.method == 'GET':
         solves = Solves.query.filter_by(studentid=studentid).all()
@@ -939,7 +939,7 @@ def admin_team(teamid):
     student = Students.query.filter_by(id=session['id']).first()
 
     if student.sectionid != team.sectionNumber:
-        return render_template('errors/403.html')
+        return render_template('admin/wrong_section.html', section=team.sectionNumber)
 
     students = Students.query.filter_by(teamid=teamid)
     # get solves data by team id
