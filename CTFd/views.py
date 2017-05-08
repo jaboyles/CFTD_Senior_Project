@@ -41,8 +41,15 @@ def setup():
             name = request.form['name']
             email = request.form['email']
             password = request.form['password']
-            sect = Sections.query.first()
-            admin = Students(name, email, password, 1, sect.sectionNumber)
+            section = Sections(0, 123)
+            db.session.add(section)
+            db.session.commit()
+
+            team = Teams("admin", section.sectionNumber)
+            db.session.add(team)
+            db.session.commit()
+
+            admin = Students(name, email, password, team.id, section.sectionNumber)
             admin.admin = True
             admin.banned = True
 
