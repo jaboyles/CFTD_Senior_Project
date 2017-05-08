@@ -162,6 +162,7 @@ def login():
                     session.regenerate() # NO SESSION FIXATION FOR YOU
                 except:
                     pass # TODO: Some session objects don't implement regenerate :(
+
                 session['username'] = student.name
                 session['id'] = student.id
                 session['admin'] = student.admin
