@@ -1,0 +1,83 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="row">
+    <br>
+    <h1>New Section</h1>
+    <table class="table table-striped">
+        <h3>Students Who Have Solved</h3>
+        <thead>
+            <tr>
+                <td class="text-center"><b>Name</b></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for student in students_solved %}
+            <tr class="chal-solve">
+                <td><span><a href="{{ request.script_root }}/admin/student/{{student.id}}">{{ student.name }}</a></span></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="table table-striped">
+        <h3>Students Who Have Not Solved</h3>
+        <thead>
+            <tr>
+                <td class="text-center"><b>Name</b></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for student in students_unsolved %}
+            <tr class="chal-solve">
+                <td><span><a href="{{ request.script_root }}/admin/student/{{student.id}}">{{ student.name }}</a></span></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="table table-striped">
+        <h3>Solves</h3>
+        <thead>
+            <tr>
+                <td class="text-center"><b>Submitted By</b></td>
+                <td class="text-center"><b>Submitted</b></td>
+                <td class="text-center"><b>Time</b></td>
+                <td class="text-center"><b>Delete</b></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for solve in solves %}
+            <tr class="chal-solve">
+                <td class="text-center chal" id="{{ solve.studentid }}">{{ solve.student_name() }}</td>
+                <td class="text-center flag" id="{{ solve.id }}">{{ solve.flag }}</td>
+                <td class="text-center solve-time"><script>document.write( moment({{ solve.date|unix_time_millis }}).local().format('MMMM Do, h:mm:ss A'))</script></td>
+                <td class="text-center"><i class="fa fa-times"></i></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="table table-striped">
+        <h3>Wrong Keys</h3>
+        <thead>
+            <tr>
+                <td class="text-center"><b>Submitted By</b></td>
+                <td class="text-center"><b>Submitted</b></td>
+                <td class="text-center"><b>Time</b></td>
+                <td class="text-center"><b>Delete</b></td>
+            </tr>
+        </thead>
+        <tbody>
+        {% for wrong_key in wrong_keys %}
+            <tr class="chal-wrong">
+                <td class="text-center chal" id="{{ wrong_key.studentid }}">{{ wrong_key.student_name() }}</td>
+                <td class="text-center flag" id="{{ wrong_key.id }}">{{ wrong_key.flag }}</td>
+                <td class="text-center solve-time"><script>document.write( moment({{ wrong_key.date|unix_time_millis }}).local().format('MMMM Do, h:mm:ss A'))</script></td>
+                <td class="text-center"><i class="fa fa-times"></i></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
