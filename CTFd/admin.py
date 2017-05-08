@@ -609,7 +609,7 @@ def admin_graph(graph_type):
         return jsonify(json_data)
     elif graph_type == "solves":
         solves_sub = db.session.query(Solves.chalid, db.func.count(Solves.chalid).label('solves_cnt')) \
-            .join(Students, Solves.studentid == Students.id).filter(Students.banned == False) \
+            .join(Students, Solves.studentid == Students.id).filter(Students.banned == False, Students.sectionid == get_section()) \
             .group_by(Solves.chalid).subquery()
         solves = db.session.query(solves_sub.columns.chalid, solves_sub.columns.solves_cnt, Challenges.name) \
             .join(Challenges, solves_sub.columns.chalid == Challenges.id).all()
@@ -841,7 +841,7 @@ def admin_correct_key(page):
 def admin_fails(studentid):
     if studentid == "all":
         fails = WrongKeys.query.join(Students, WrongKeys.studentid == Students.id).filter(
-            Students.banned == False).count()
+            Students.banned == False, Students.sectionid == get_section()).count()
         solves = Solves.query.join(Students, Solves.studentid == Students.id).filter(Students.banned == False).count()
         db.session.close()
         json_data = {'fails': str(fails), 'solves': str(solves)}
