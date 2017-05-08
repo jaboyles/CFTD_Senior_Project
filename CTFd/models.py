@@ -270,6 +270,10 @@ class Solves(db.Model):
                                                                              Teams.id == Students.teamid).first()
         return team.id
 
+    def student_name(self):
+        student = db.session.query(Students).filter(Students.id == self.studentid).first()
+        return student.name
+
 
 class WrongKeys(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -288,7 +292,7 @@ class WrongKeys(db.Model):
         return '<wrong %r>' % self.flag
 
     def student_name(self):
-        student = db.session.query(Students).filter_by(Students.id == self.studentid).first()
+        student = db.session.query(Students).filter(Students.id == self.studentid).first()
         return student.name
 
 

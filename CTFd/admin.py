@@ -486,16 +486,12 @@ def admin_student(studentid):
         solves = Solves.query.filter_by(studentid=studentid).all()
         solve_ids = [s.chalid for s in solves]
         missing = Challenges.query.filter(not_(Challenges.id.in_(solve_ids))).all()
-        last_seen = db.func.max(Tracking.date).label('last_seen')
-        addrs = db.session.query(Tracking.ip, last_seen) \
-            .filter_by(student=studentid) \
-            .group_by(Tracking.ip) \
-            .order_by(last_seen.desc()).all()
+
         wrong_keys = WrongKeys.query.filter_by(studentid=studentid).order_by(WrongKeys.date.asc()).all()
         awards = Awards.query.filter_by(studentid=studentid).order_by(Awards.date.asc()).all()
         score = user.score()
         place = user.place()
-        return render_template('admin/student.html', solves=solves, student=user, addrs=addrs, score=score,
+        return render_template('admin/student.html', solves=solves, student=user, score=score,
                                missing=missing,
                                place=place, wrong_keys=wrong_keys, awards=awards)
     elif request.method == 'POST':
@@ -968,6 +964,25 @@ def teamChallenges(teamid):
     challenges = team.challenges()
     return render_template('tChallenges.html', team=team, challenges=challenges)
 
+@admin.route('/admin/team/<int:teamid>/challenge/<int:chalid>')
+def team_challenge(teamid, chalid):
+    team = Teams.query.filter_by(id=teamid).first()
+    student = Students.query.filter_by(id=session['id']).first()
+
+    if student.sectionid != team.sectionNumber:
+        return render_template('admin/wrong_section.html', section=team.sectionNumber)
+
+    challenge = Challenges.query.filter_by(id=chalid).first()
+    students = Students.query.filter_by(teamid=team.id).all()
+    student_ids = [s.id for s in students]
+    #
+    solves = Solves.query.filter(Solves.chalid == chalid, Solves.studentid.in_(student_ids)).all()
+    solve_ids = [s.id for s in solves]
+    solve_student_ids = [s.studentid for s in solves]
+    students_solved = Students.query.filter(Students.id.in_(solve_student_ids)).all()
+    students_unsolved = Students.query.filter(not_(Students.id.in_(solve_student_ids)), Students.teamid == team.id).all()
+    wrong_keys = WrongKeys.query.filter(WrongKeys.chalid == chalid, WrongKeys.studentid.in_(student_ids)).all()
+    return render_template('admin/challenge.html', challenge=challenge, students_solved=students_solved, students_unsolved=students_unsolved, wrong_keys=wrong_keys, solves=solves)
 
 @admin.route('/admin/team/<int:teamid>/solves')
 def teamSolves(teamid):
