@@ -352,7 +352,7 @@ def admin_chals():
                 percentage = 0.0
             prereq = Challenges.query.filter(Challenges.id == x.prereq).first()
             if prereq is None:
-                prereq_name = "None"
+                prereq_name = ""
             else:
                 prereq_name = prereq.name
             json_data['game'].append({
@@ -863,12 +863,15 @@ def admin_create_chal():
 
     # TODO: Expand to support multiple flags
     flags = [{'flag': request.form['key'], 'type': int(request.form['key_type[0]'])}]
-    prereq = Challenges.query.filter(Challenges.name == request.form['prereq']).first()
-    print(prereq)
+    if (request.form['prereq'] != ""):
+        prereq = Challenges.query.filter(Challenges.name == request.form['prereq']).first()
+        prereq = prereq.id
+    else:
+        prereq = None
 
     # Create challenge
     chal = Challenges(request.form['name'], request.form['desc'], request.form['value'], request.form['category'],
-                      flags, request.form['level'], prereq.id)
+                      flags, request.form['level'], prereq)
     '''if 'hidden' in request.form:
         chal.hidden = True
     else:
@@ -912,6 +915,12 @@ def admin_update_chal():
     challenge.value = request.form['value']
     challenge.category = request.form['category']
     challenge.hidden = 'hidden' in request.form
+    challenge.level = request.form['level']
+    if (request.form['prereq'] != ""):
+        prereq = Challenges.query.filter(Challenges.name == request.form['prereq']).first()
+        challenge.prereq = prereq.id
+    else:
+        challenge.prereq = None
     db.session.add(challenge)
     db.session.commit()
     db.session.close()
