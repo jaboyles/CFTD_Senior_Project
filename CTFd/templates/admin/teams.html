@@ -159,40 +159,6 @@ function load_update_modal(id, name){
     $('#user').modal("show");
 }
 
-$('.team-admin input').on('change', function(){
-    var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
-    var admin = $(this).prop('checked');
-    var nonce = $('#nonce').val();
-    console.log(admin);
-
-    $.post('{{ request.script_root }}/admin/team/'+id, {'admin':admin, 'nonce':nonce});
-});
-
-$('.team-verified input').on('change', function () {
-    var elem = $(this).parent().parent().parent();
-    var id = elem.find('.team-id').text().trim();
-    var verified = $(this).prop('checked');
-    var nonce = $('#nonce').val();
-    console.log(verified);
-
-    $.post('{{ request.script_root }}/admin/team/' + id, {'verified': verified, 'nonce': nonce});
-})
-
-$('#send-user-email').click(function(e){
-    e.preventDefault();
-    var id = $('#email-user input[name="id"]').val();
-    var email_data = $('#email-user form').serializeArray();
-    $.post($('#email-user form').attr('action'), $('#email-user form').serialize(), function(data){
-        if (data == "1"){
-            $('#email-user').modal('hide');
-        }
-        else{
-            $('#email-user-errors').append("<b>Failed to send email</b>");
-        }
-    });
-});
-
 $('#delete-user').click(function(e){
     e.preventDefault();
     var id = $('#confirm input[name="id"]').val()
