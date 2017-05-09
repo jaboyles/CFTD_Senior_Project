@@ -61,10 +61,6 @@ def setup():
         <br>
         Modified for educational use by <a href="https://github.com/camgeehr">Cameron Geehr</a>, <a href="https://github.com/jaboyles">Jacob Boyles</a>, and <a href="https://github.com/bgoulds">Brian Gouldsberry</a>
     </h3>
-
-    <h4 class="text-center">
-        <a href="{0}/admin">Click here</a> to login and setup your CTF
-    </h4>
 </div>""".format(request.script_root))
 
             # max attempts per challenge
