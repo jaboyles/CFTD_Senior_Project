@@ -350,7 +350,11 @@ def admin_chals():
                 percentage = (float(solve_count) / float(students_with_points))
             else:
                 percentage = 0.0
-
+            prereq = Challenges.query.filter(Challenges.id == x.prereq).first()
+            if prereq is None:
+                prereq_name = "None"
+            else:
+                prereq_name = prereq.name
             json_data['game'].append({
                 'id': x.id,
                 'name': x.name,
@@ -359,7 +363,7 @@ def admin_chals():
                 'category': x.category,
                 'hidden': x.hidden,
                 'percentage_solved': percentage,
-                'prereq': x.prereq,
+                'prereq': prereq_name,
                 'level': x.level
             })
 
