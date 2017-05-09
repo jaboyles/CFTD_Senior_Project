@@ -597,6 +597,20 @@ def delete_student(studentid):
         return '1'
 
 
+@admin.route('/admin/student/new', methods=['POST'])
+@admins_only
+def add_student():
+    try:
+        student = Students(request.form['name'], request.form['email'], "password", request.form['team'], request.form['section'])
+        db.session.add(student)
+        db.session.commit()
+        db.session.close()
+    except DatabaseError:
+        return '0'
+    else:
+        return '1'
+
+
 @admin.route('/admin/graphs/<graph_type>')
 @admins_only
 def admin_graph(graph_type):
@@ -950,6 +964,14 @@ def admin_team(teamid):
         return render_template('admin/team.html', team=team, students=students, challenges=challenges)
     elif request.method == 'POST':
         return None  # return solves data by team id
+
+@admin.route('/admin/team/<int:teamid>/update', methods=['POST'])
+def admin_update_team(teamid):
+    team = Teams.query.filter(Teams.id == teamid).first()
+    team.name = request.form['name']
+    db.session.commit()
+    db.session.close()
+    return redirect('/admin/teams')
 
 
 @admin.route('/admin/team/new', methods=['POST'])

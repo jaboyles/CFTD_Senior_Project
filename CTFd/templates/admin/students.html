@@ -90,6 +90,38 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             </div>
         </div>
     </div>
+    <div id="new-user" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="text-center">New Team</h2>
+                </div>
+                <div class="modal-body" style="padding:20px; height:525px;">
+                    <form method="POST" action="{{ request.script_root }}/admin/student/new">
+                        <input type="hidden" name="nonce" value="{{ nonce }}">
+                        <input type="hidden" name="id">
+                        <div class="form-group">
+                            <label for="name">Student Name</label>
+                            <input type="text" class="form-control" name="name" id="student-name" placeholder="Enter student name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Student Email</label>
+                            <input type="text" class="form-control" name="email" id="student-email" placeholder="Enter student email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Team ID</label>
+                            <input type="text" class="form-control" name="team" id="team-id" placeholder="Enter team ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Section Number</label>
+                            <input type="text" class="form-control" name="section" id="section-id" placeholder="Enter section number" required>
+                        </div>
+                        <button id="create-user" type="submit" class="btn btn-theme btn-outlined pull-right">Create</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <table id="studentsboard" class="table table-striped">
         <thead>
             <tr>
@@ -138,6 +170,9 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             {% endfor %}
         </tbody>
     </table>
+    <button id="add-student" type="button" class="text-center btn btn-theme btn-outlined">
+        + New Student
+    </button>
     {% if pages > 1 %}
     <div class="text-center">Page
         <br>
@@ -244,6 +279,10 @@ $('#delete-user').click(function(e){
             location.reload()
         }
     })
+});
+
+$('#add-team').click(function(){
+    $('#new-user').modal("show");
 });
 
 $('.fa-pencil-square-o').click(function(){
