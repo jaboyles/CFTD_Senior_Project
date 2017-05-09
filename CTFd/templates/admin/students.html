@@ -192,16 +192,14 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
 
 {% block scripts %}
 <script>
-function load_update_modal(id, name, team, email, website, affiliation, country){
+function load_update_modal(id, name, team, email){
     var modal_form = $('#user form');
 
     modal_form.find('input[name=name]').val(name)
     modal_form.find('input[name=team]').val(team)
     modal_form.find('input[name=id]').val(id)
     modal_form.find('input[name=email]').val(email)
-    modal_form.find('input[name=website]').val(website)
-    modal_form.find('input[name=affiliation]').val(affiliation)
-    modal_form.find('input[name=country]').val(country)
+
     $('#user form').attr('action', '{{ request.script_root }}/admin/student/'+id)
     $('#user').modal("show");
 }
