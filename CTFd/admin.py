@@ -600,15 +600,12 @@ def delete_student(studentid):
 @admin.route('/admin/student/new', methods=['POST'])
 @admins_only
 def add_student():
-    try:
-        student = Students(request.form['name'], request.form['email'], "password", request.form['team'], request.form['section'])
-        db.session.add(student)
-        db.session.commit()
-        db.session.close()
-    except DatabaseError:
-        return '0'
-    else:
-        return '1'
+    student = Students(request.form['name'], request.form['email'], "password", int(request.form['team']), int(request.form['section']))
+    student.verified = True
+    db.session.add(student)
+    db.session.commit()
+    db.session.close()
+    return redirect('/admin/students')
 
 
 @admin.route('/admin/graphs/<graph_type>')
