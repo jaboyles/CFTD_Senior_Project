@@ -336,7 +336,7 @@ def new_container():
 @admins_only
 def admin_chals():
     if request.method == 'POST':
-        chals = Challenges.query.add_columns('id', 'name', 'value', 'description', 'category', 'hidden').order_by(
+        chals = Challenges.query.add_columns('id', 'name', 'value', 'description', 'category', 'hidden', 'level', 'prereq').order_by(
             Challenges.value).all()
 
         students_with_points = db.session.query(Solves.studentid).join(Students).filter(
@@ -358,7 +358,9 @@ def admin_chals():
                 'description': x.description,
                 'category': x.category,
                 'hidden': x.hidden,
-                'percentage_solved': percentage
+                'percentage_solved': percentage,
+                'prereq': x.prereq,
+                'level': x.level
             })
 
         db.session.close()
@@ -857,14 +859,16 @@ def admin_create_chal():
 
     # TODO: Expand to support multiple flags
     flags = [{'flag': request.form['key'], 'type': int(request.form['key_type[0]'])}]
+    prereq = Challenges.query.filter(Challenges.name == request.form['prereq']).first()
+    print(prereq)
 
     # Create challenge
     chal = Challenges(request.form['name'], request.form['desc'], request.form['value'], request.form['category'],
-                      flags)
-    if 'hidden' in request.form:
+                      flags, request.form['level'], prereq.id)
+    '''if 'hidden' in request.form:
         chal.hidden = True
     else:
-        chal.hidden = False
+        chal.hidden = False'''
     db.session.add(chal)
     db.session.commit()
 
@@ -971,18 +975,31 @@ def team_challenge(teamid, chalid):
 
     if student.sectionid != team.sectionNumber:
         return render_template('admin/wrong_section.html', section=team.sectionNumber)
-
+    # Get the challenge
     challenge = Challenges.query.filter_by(id=chalid).first()
+    # Get all the students on the team and their ids
     students = Students.query.filter_by(teamid=team.id).all()
     student_ids = [s.id for s in students]
-    #
+    # Get all the solves from the team for the challenge
     solves = Solves.query.filter(Solves.chalid == chalid, Solves.studentid.in_(student_ids)).all()
-    solve_ids = [s.id for s in solves]
     solve_student_ids = [s.studentid for s in solves]
+    # Get all the students who have solved and haven't solved the challenge from the team
     students_solved = Students.query.filter(Students.id.in_(solve_student_ids)).all()
     students_unsolved = Students.query.filter(not_(Students.id.in_(solve_student_ids)), Students.teamid == team.id).all()
+    # Get all of the wrong submissions for the challenge from the team
     wrong_keys = WrongKeys.query.filter(WrongKeys.chalid == chalid, WrongKeys.studentid.in_(student_ids)).all()
-    return render_template('admin/challenge.html', challenge=challenge, students_solved=students_solved, students_unsolved=students_unsolved, wrong_keys=wrong_keys, solves=solves)
+    # Get the key for the challenge
+    flags = json.loads(challenge.flags)
+    key = flags[0]['flag']
+    return render_template('admin/challenge.html',
+                           challenge=challenge,
+                           team=team,
+                           students_solved=students_solved,
+                           students_unsolved=students_unsolved,
+                           wrong_keys=wrong_keys,
+                           solves=solves,
+                           key=key)
+
 
 @admin.route('/admin/team/<int:teamid>/solves')
 def teamSolves(teamid):

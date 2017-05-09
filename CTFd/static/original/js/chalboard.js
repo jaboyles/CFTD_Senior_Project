@@ -37,6 +37,8 @@ function updateChalWindow(obj) {
     }
 
     chal.find('.chal-value').text(obj.value);
+    chal.find('.chal-level').text(obj.level);
+    chal.find('.chal-prereq').text(obj.prereq);
     chal.find('.chal-category').text(obj.category);
     chal.find('#chal-id').val(obj.id);
     var solves = obj.solves == 1 ? " Solve" : " Solves";

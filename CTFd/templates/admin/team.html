@@ -106,7 +106,7 @@
             </tr>
         </thead>
         <tbody>
-        {% for chal in challenges %}
+            {% for chal in challenges %}
             <tr class="chal-solve">
                 <td><span><a href="{{ request.script_root }}/admin/team/{{team.id}}/challenge/{{ chal.id }}">{{ chal.name }}</a></span></td>
                     <td><span>{{ chal.category }}</span></td>
@@ -115,7 +115,7 @@
                     <td><span>{{ chal.value * chal.num_students_solve(team.id) }}</span></td>
                 <td class="text-center"><i class="fa fa-times"></i></td>
             </tr>
-        {% endfor %}
+            {% endfor %}
         </tbody>
     </table>
 
