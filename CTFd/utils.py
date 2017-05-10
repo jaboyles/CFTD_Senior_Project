@@ -603,9 +603,6 @@ def create_section_students_from_file(file):
     section = Sections(section_number, class_name)
     db.session.add(section)
 
-    print("Section: " + str(section_number))
-
-    print("Class name: " + str(class_name))
     # Generate teams for section
     team_count = Teams.query.filter_by().count()
     NUMBER_TEAMS = 5
@@ -628,17 +625,18 @@ def create_section_students_from_file(file):
 
     # Generate students
     students = get_students_from_file(filename)
+    display_students = list()
     for index in range(len(students)):
-        print("Student " + students[index]['id'] + ":")
-        print(students[index])
+        password = generate_password()
         team_id = team_ids[random.randrange(1, len(team_ids))]
-        print("team id:")
-        print(team_id)
-        student = Students(students[index]["name"], students[index]["email"], "password", team_id, section_number)
+        student = Students(students[index]["name"], students[index]["email"], password, team_id, section_number)
         db.session.add(student)
         student.verified = True
+        display_student = {"name": students[index]["name"], "password": password}
+        display_students.append(display_student)
 
     db.session.commit()
+    return display_students
 
 
 def get_class_info_from_file(filename):
@@ -719,3 +717,7 @@ def get_students_from_file(filename):
         students.append(student)
 
     return students
+
+
+def generate_password():
+    return ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') for i in range(12))
