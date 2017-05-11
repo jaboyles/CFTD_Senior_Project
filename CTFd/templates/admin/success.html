@@ -4,6 +4,23 @@
 <div class="row">
     <br>
     <h1 class="text-center">Success!</h1>
+    <table class="table table-striped">
+        <h3>Print this for your records. Passwords will not be shown in plaintext again.</h3>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Password</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.password }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 

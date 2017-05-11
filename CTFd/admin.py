@@ -62,8 +62,8 @@ def new_section_from_file():
             flash('No selected file')
             return redirect(request.url)
         if file:
-            create_section_students_from_file(file)
-    return render_template("admin/success.html")
+            students = create_section_students_from_file(file)
+    return render_template("admin/success.html", students=students)
 
 
 @admin.route('/admin/sections', methods=['GET'])
