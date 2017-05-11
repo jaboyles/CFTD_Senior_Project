@@ -5,12 +5,12 @@ import os
 from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint, session
 from flask import flash
 from passlib.hash import bcrypt_sha256
-from passlib.utils import generate_password
 from sqlalchemy.sql import not_
 
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
-    container_stop, container_start, get_themes, cache, upload_file, authed, create_section_students_from_file
+    container_stop, container_start, get_themes, cache, upload_file, authed, create_section_students_from_file, \
+    generate_password
 from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, \
     Pages, Config, DatabaseError, \
     Sections, Teams
@@ -609,7 +609,7 @@ def add_student():
     db.session.close()
     students = list()
     students.append({"name": request.form['name'], "password": password})
-    return redirect('/admin/success', students=students)
+    return render_template('admin/success.html', students=students)
 
 
 @admin.route('/admin/graphs/<graph_type>')
