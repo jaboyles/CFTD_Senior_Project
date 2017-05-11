@@ -5,6 +5,7 @@ import os
 from flask import current_app as app, render_template, request, redirect, jsonify, url_for, Blueprint, session
 from flask import flash
 from passlib.hash import bcrypt_sha256
+from passlib.utils import generate_password
 from sqlalchemy.sql import not_
 
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
@@ -600,12 +601,15 @@ def delete_student(studentid):
 @admin.route('/admin/student/new', methods=['POST'])
 @admins_only
 def add_student():
-    student = Students(request.form['name'], request.form['email'], "password", int(request.form['team']), int(request.form['section']))
+    password = generate_password()
+    student = Students(request.form['name'], request.form['email'], password, int(request.form['team']), int(request.form['section']))
     student.verified = True
     db.session.add(student)
     db.session.commit()
     db.session.close()
-    return redirect('/admin/students')
+    students = list()
+    students.append({"name": request.form['name'], "password": password})
+    return redirect('/admin/success', students=students)
 
 
 @admin.route('/admin/graphs/<graph_type>')
