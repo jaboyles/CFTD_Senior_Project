@@ -90,6 +90,38 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             </div>
         </div>
     </div>
+    <div id="new-user" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="text-center">New Team</h2>
+                </div>
+                <div class="modal-body" style="padding:20px; height:525px;">
+                    <form method="POST" action="{{ request.script_root }}/admin/student/new">
+                        <input type="hidden" name="nonce" value="{{ nonce }}">
+                        <input type="hidden" name="id">
+                        <div class="form-group">
+                            <label for="name">Student Name</label>
+                            <input type="text" class="form-control" name="name" id="student-name" placeholder="Enter student name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Student Email</label>
+                            <input type="text" class="form-control" name="email" id="student-email" placeholder="Enter student email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Team ID</label>
+                            <input type="text" class="form-control" name="team" id="team-id" placeholder="Enter team ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Section Number</label>
+                            <input type="text" class="form-control" name="section" id="section-id" placeholder="Enter section number" required>
+                        </div>
+                        <button id="create-user" type="submit" class="btn btn-theme btn-outlined pull-right">Create</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <table id="studentsboard" class="table table-striped">
         <thead>
             <tr>
@@ -138,6 +170,9 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
             {% endfor %}
         </tbody>
     </table>
+    <button id="add-student" type="button" class="text-center btn btn-theme btn-outlined">
+        + New Student
+    </button>
     {% if pages > 1 %}
     <div class="text-center">Page
         <br>
@@ -157,16 +192,14 @@ input[type="checkbox"] { margin: 0px !important; position: relative; top: 5px; }
 
 {% block scripts %}
 <script>
-function load_update_modal(id, name, team, email, website, affiliation, country){
+function load_update_modal(id, name, team, email){
     var modal_form = $('#user form');
 
     modal_form.find('input[name=name]').val(name)
     modal_form.find('input[name=team]').val(team)
     modal_form.find('input[name=id]').val(id)
     modal_form.find('input[name=email]').val(email)
-    modal_form.find('input[name=website]').val(website)
-    modal_form.find('input[name=affiliation]').val(affiliation)
-    modal_form.find('input[name=country]').val(country)
+
     $('#user form').attr('action', '{{ request.script_root }}/admin/student/'+id)
     $('#user').modal("show");
 }
@@ -185,12 +218,6 @@ $('#update-user').click(function(e){
                 row.find('.student-name > a').text( $.grep(user_data, function(e){ return e.name == 'name'; })[0]['value'] );
                 row.find('.student-email').text( $.grep(user_data, function(e){ return e.name == 'email'; })[0]['value'] );
 
-                row.find('.student-website > a').empty()
-                var website = $.grep(user_data, function(e){ return e.name == 'website'; })[0]['value']
-                row.find('.student-website').append($('<a>').attr('href', website).text(website));
-
-                row.find('.student-affiliation').text( $.grep(user_data, function(e){ return e.name == 'affiliation'; })[0]['value'] );
-                row.find('.student-country').text( $.grep(user_data, function(e){ return e.name == 'country'; })[0]['value'] );
                 $('#user').modal('hide');
             }
             else{
@@ -246,6 +273,10 @@ $('#delete-user').click(function(e){
     })
 });
 
+$('#add-student').click(function(){
+    $('#new-user').modal("show");
+});
+
 $('.fa-pencil-square-o').click(function(){
     var elem = $(this).parent().parent().parent();
     var id = elem.find('.student-id').text().trim();
@@ -253,11 +284,8 @@ $('.fa-pencil-square-o').click(function(){
     var href = elem.find('.student-team a').attr('href');
     var team = href.slice(href.lastIndexOf('/') + 1).trim();
     var email = elem.find('.student-email').text().trim();
-    var website = elem.find('.student-website').text().trim();
-    var affiliation = elem.find('.student-affiliation').text().trim();
-    var country = elem.find('.student-country').text().trim();
 
-    load_update_modal(id, name, team, email, website, affiliation, country);
+    load_update_modal(id, name, team, email);
 });
 
 function load_confirm_modal(id, name){

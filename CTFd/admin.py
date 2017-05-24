@@ -9,7 +9,8 @@ from sqlalchemy.sql import not_
 
 from CTFd.utils import admins_only, is_admin, unix_time, get_config, \
     set_config, sendmail, rmdir, create_image, delete_image, run_image, container_status, container_ports, \
-    container_stop, container_start, get_themes, cache, upload_file, authed, create_section_students_from_file
+    container_stop, container_start, get_themes, cache, upload_file, authed, create_section_students_from_file, \
+    generate_password
 from CTFd.models import db, Students, Solves, Awards, Containers, Challenges, WrongKeys, Keys, Tags, Files, Tracking, \
     Pages, Config, DatabaseError, \
     Sections, Teams
@@ -597,6 +598,20 @@ def delete_student(studentid):
         return '1'
 
 
+@admin.route('/admin/student/new', methods=['POST'])
+@admins_only
+def add_student():
+    password = generate_password()
+    student = Students(request.form['name'], request.form['email'], password, int(request.form['team']), int(request.form['section']))
+    student.verified = True
+    db.session.add(student)
+    db.session.commit()
+    db.session.close()
+    students = list()
+    students.append({"name": request.form['name'], "password": password})
+    return render_template('admin/success.html', students=students)
+
+
 @admin.route('/admin/graphs/<graph_type>')
 @admins_only
 def admin_graph(graph_type):
@@ -950,6 +965,14 @@ def admin_team(teamid):
         return render_template('admin/team.html', team=team, students=students, challenges=challenges)
     elif request.method == 'POST':
         return None  # return solves data by team id
+
+@admin.route('/admin/team/<int:teamid>/update', methods=['POST'])
+def admin_update_team(teamid):
+    team = Teams.query.filter(Teams.id == teamid).first()
+    team.name = request.form['name']
+    db.session.commit()
+    db.session.close()
+    return redirect('/admin/teams')
 
 
 @admin.route('/admin/team/new', methods=['POST'])
