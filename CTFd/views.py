@@ -58,11 +58,9 @@ def setup():
     <img class="logo" src="{0}/static/original/img/logo.png" />
     <h3 class="text-center">
         Welcome to a cool CTF framework written by <a href="https://github.com/ColdHeat">Kevin Chung</a> of <a href="https://github.com/isislab">@isislab</a>
+        <br>
+        Modified for educational use by <a href="https://github.com/camgeehr">Cameron Geehr</a>, <a href="https://github.com/jaboyles">Jacob Boyles</a>, and <a href="https://github.com/bgoulds">Brian Gouldsberry</a>
     </h3>
-
-    <h4 class="text-center">
-        <a href="{0}/admin">Click here</a> to login and setup your CTF
-    </h4>
 </div>""".format(request.script_root))
 
             # max attempts per challenge
