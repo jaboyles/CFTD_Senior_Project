@@ -292,9 +292,9 @@ def get_ip():
     return remote_addr
 
 
-def get_kpm(teamid): # keys per minute
+def get_kpm(studentid): # keys per minute
     one_min_ago = datetime.datetime.utcnow() + datetime.timedelta(minutes=-1)
-    return len(db.session.query(WrongKeys).filter(WrongKeys.teamid == teamid, WrongKeys.date >= one_min_ago).all())
+    return len(db.session.query(WrongKeys).filter(WrongKeys.studentid == studentid, WrongKeys.date >= one_min_ago).all())
 
 
 def get_themes():

@@ -50,13 +50,14 @@ def chals():
             else:
                 return redirect(url_for('views.static_html'))
     if user_can_view_challenges() and (ctf_started() or is_admin()):
-        chals = Challenges.query.filter(or_(Challenges.hidden != True, Challenges.hidden == None)).add_columns('id', 'name', 'value', 'description', 'category').order_by(Challenges.value).all()
-
+        chals = list()
+        chals.extend(Challenges.query.filter(Challenges.hidden != True).add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.value).all())
+        chals.extend(Challenges.query.filter(Challenges.hidden == None).add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.value).all())
         json = {'game': []}
         for x in chals:
             tags = [tag.tag for tag in Tags.query.add_columns('tag').filter_by(chal=x[1]).all()]
             files = [str(f.location) for f in Files.query.filter_by(chal=x.id).all()]
-            json['game'].append({'id': x[1], 'name': x[2], 'value': x[3], 'description': x[4], 'category': x[5], 'files': files, 'tags': tags})
+            json['game'].append({'id': x[1], 'name': x[2], 'value': x[3], 'description': x[4], 'category': x[5], 'level': x[6], 'prereq':x[7], 'files': files, 'tags': tags})
 
         db.session.close()
         return jsonify(json)
