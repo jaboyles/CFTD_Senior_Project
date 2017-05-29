@@ -52,22 +52,17 @@ def chals():
     if user_can_view_challenges() and (ctf_started() or is_admin()):
         userId = session.get('id')
         maxLevel = db.session.query(func.max(Challenges.level).label("max_level")).first()[0]
-        print maxLevel
         for index in range(maxLevel):
             level = index + 1
             chalCount = Challenges.query.filter(Challenges.level == level).count()
-            print "\n" + str(chalCount)
             solveCount = Solves.query.filter(Solves.studentid == userId, Challenges.level == level).join(Challenges).count()
-            print str(solveCount) + "\n"
-            if solveCount == 0:
+            if solveCount < chalCount:
                 break
 
 
         chals = Challenges.query.filter(or_(Challenges.hidden != True, Challenges.hidden == None), Challenges.level <= level)\
-            .add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.value).all()
+            .add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.level).all()
 
-        userId = session.get('id')
-        print userId
         json = {'game': []}
         for x in chals:
             tags = [tag.tag for tag in Tags.query.add_columns('tag').filter_by(chal=x[1]).all()]
