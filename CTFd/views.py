@@ -303,11 +303,3 @@ def teamSolves(teamid):
     team = Teams.query.filter_by(id=teamid).first()
     solves = team.solves()
     return render_template('tSolves.html', team=team, solves=solves)
-
-
-@views.route('/test')
-def test():
-    challenges = Challenges.query.all()
-
-
-    return render_template('test.html', challenges=challenges)
