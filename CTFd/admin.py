@@ -338,7 +338,7 @@ def new_container():
 def admin_chals():
     if request.method == 'POST':
         chals = Challenges.query.add_columns('id', 'name', 'value', 'description', 'category', 'hidden', 'level', 'prereq').order_by(
-            Challenges.value).all()
+            Challenges.level).all()
 
         students_with_points = db.session.query(Solves.studentid).join(Students).filter(
             Students.banned == False).group_by(Solves.studentid).count()
