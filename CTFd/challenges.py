@@ -64,7 +64,7 @@ def chals():
 
 
         chals = Challenges.query.filter(or_(Challenges.hidden != True, Challenges.hidden == None), Challenges.level <= level)\
-            .add_columns('id', 'name', 'value', 'description', 'category').order_by(Challenges.value).all()
+            .add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.value).all()
 
         userId = session.get('id')
         print userId
