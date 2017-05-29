@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 from flask import render_template, request, redirect, jsonify, url_for, session, Blueprint
-from sqlalchemy.sql import or_
+from sqlalchemy.sql import or_, func
 
 from CTFd.utils import ctftime, view_after_ctf, authed, unix_time, get_kpm, user_can_view_challenges, is_admin, get_config, get_ip, is_verified, ctf_started, ctf_ended, ctf_name
 from CTFd.models import db, Challenges, Files, Solves, WrongKeys, Tags, Students, Awards
@@ -50,9 +50,24 @@ def chals():
             else:
                 return redirect(url_for('views.static_html'))
     if user_can_view_challenges() and (ctf_started() or is_admin()):
-        chals = list()
-        chals.extend(Challenges.query.filter(Challenges.hidden != True).add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.value).all())
-        chals.extend(Challenges.query.filter(Challenges.hidden == None).add_columns('id', 'name', 'value', 'description', 'category', 'level', 'prereq').order_by(Challenges.value).all())
+        userId = session.get('id')
+        maxLevel = db.session.query(func.max(Challenges.level).label("max_level")).first()[0]
+        print maxLevel
+        for index in range(maxLevel):
+            level = index + 1
+            chalCount = Challenges.query.filter(Challenges.level == level).count()
+            print "\n" + str(chalCount)
+            solveCount = Solves.query.filter(Solves.studentid == userId, Challenges.level == level).join(Challenges).count()
+            print str(solveCount) + "\n"
+            if solveCount == 0:
+                break
+
+
+        chals = Challenges.query.filter(or_(Challenges.hidden != True, Challenges.hidden == None), Challenges.level <= level)\
+            .add_columns('id', 'name', 'value', 'description', 'category').order_by(Challenges.value).all()
+
+        userId = session.get('id')
+        print userId
         json = {'game': []}
         for x in chals:
             tags = [tag.tag for tag in Tags.query.add_columns('tag').filter_by(chal=x[1]).all()]
@@ -149,7 +164,7 @@ def who_solved(chalid):
     solves = Solves.query.join(Students, Solves.studentid == Students.id).filter(Solves.chalid == chalid, Students.banned == False).order_by(Solves.date.asc())
     json = {'teams': []}
     for solve in solves:
-        json['teams'].append({'id': solve.team.id, 'name': solve.team.name, 'date': solve.date})
+        json['teams'].append({'id': solve.team().id, 'name': solve.team().name, 'date': solve.date})
     return jsonify(json)
 
 

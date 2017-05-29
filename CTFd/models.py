@@ -268,7 +268,7 @@ class Solves(db.Model):
     def team(self):
         team = db.session.query(Teams).join(Students).join(Solves).filter(Students.id == self.studentid,
                                                                              Teams.id == Students.teamid).first()
-        return team.id
+        return team
 
     def student_name(self):
         student = db.session.query(Students).filter(Students.id == self.studentid).first()
