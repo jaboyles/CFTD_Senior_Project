@@ -166,18 +166,18 @@ function getsolves(id){
 
 function loadchals() {
     $.get(script_root + "/chals", function (data) {
-        var categories = [];
+        var levels = [];
         challenges = $.parseJSON(JSON.stringify(data));
 
         $('#challenges-board').html("");
 
         for (var i = challenges['game'].length - 1; i >= 0; i--) {
             challenges['game'][i].solves = 0
-            if ($.inArray(challenges['game'][i].category, categories) == -1) {
-                var category = challenges['game'][i].category;
-                categories.push(category);
+            if ($.inArray(challenges['game'][i].level, levels) == -1) {
+                var level = challenges['game'][i].level;
+                levels.push(level);
 
-                var categoryid = category.replace(/ /g,"-").hashCode();
+                var categoryid = level;
                 var categoryrow = $('' +
                     '<div id="{0}-row">'.format(categoryid) +
                         '<div class="category-header col-md-2">' +
@@ -186,9 +186,9 @@ function loadchals() {
                             '<div class="chal-row"></div>' +
                         '</div>' +
                     '</div>');
-                categoryrow.find(".category-header").append($("<h3>"+ category +"</h3>"));
+                categoryrow.find(".category-header").append($("<h3>"+ "Level " + JSON.stringify(level) +"</h3>"));
 
-                $('#challenges-board').append(categoryrow);
+                $('#challenges-board').prepend(categoryrow);
             }
         };
 
@@ -196,7 +196,7 @@ function loadchals() {
             var chalinfo = challenges['game'][i];
             var challenge = chalinfo.category.replace(/ /g,"-").hashCode();
             var chalid = chalinfo.name.replace(/ /g,"-").hashCode();
-            var catid = chalinfo.category.replace(/ /g,"-").hashCode();
+            var catid = chalinfo.level;
             var chalwrap = $("<div id='{0}' class='challenge-wrapper col-md-2'></div>".format(chalid));
             var chalbutton = $("<button class='challenge-button trigger theme-background hide-text' value='{0}' data-toggle='modal' data-target='#chal-window'></div>".format(chalinfo.id));
             var chalheader = $("<h5>{0}</h5>".format(chalinfo.name));

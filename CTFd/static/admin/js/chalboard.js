@@ -160,21 +160,21 @@ function loadchals(){
     $.post(script_root + "/admin/chals", {
         'nonce': $('#nonce').val()
     }, function (data) {
-        categories = [];
+        levels = [];
         challenges = $.parseJSON(JSON.stringify(data));
 
 
         for (var i = challenges['game'].length - 1; i >= 0; i--) {
-            if ($.inArray(challenges['game'][i].category, categories) == -1) {
-                categories.push(challenges['game'][i].category)
-                $('#challenges').append($('<tr id="' + challenges['game'][i].category.replace(/ /g,"-").hashCode() + '"><td class="col-md-1"><h3>' + challenges['game'][i].category + '</h3></td></tr>'))
+            if ($.inArray(challenges['game'][i].level, levels) == -1) {
+                levels.push(challenges['game'][i].level)
+                $('#challenges').prepend($('<tr id="' + challenges['game'][i].level + '"><td class="col-md-1"><h3>' + "Level " + challenges['game'][i].level + '</h3></td></tr>'))
             }
         };
 
         for (var i = 0; i <= challenges['game'].length - 1; i++) {
             var chal = challenges['game'][i]
             var chal_button = $('<button class="chal-button col-md-2 theme-background" value="{0}"><h5>{1}</h5><p class="chal-points">{2}</p><span class="chal-percent">{3}% solved</span></button>'.format(chal.id, chal.name, chal.value, Math.round(chal.percentage_solved * 100)));
-            $('#' + challenges['game'][i].category.replace(/ /g,"-").hashCode()).append(chal_button);
+            $('#' + challenges['game'][i].level).append(chal_button);
         };
 
         $('#challenges button').click(function (e) {
